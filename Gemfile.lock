@@ -10,7 +10,7 @@ PATH
     cassandra-utils (0.1.0)
       dogstatsd-ruby (~> 1.6)
       mixlib-shellout (~> 2.2)
-      thor
+      thor (~> 0.19)
 
 GEM
   remote: https://rubygems.org/
