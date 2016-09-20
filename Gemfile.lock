@@ -1,8 +1,10 @@
-PATH
-  remote: ../daemon_runner
+GIT
+  remote: git@github.com:rapid7/daemon_runner.git
+  revision: 2b4139146c86fc3b49febd6cb53b4654774c1181
+  ref: 0.1.0.rc1
   specs:
     daemon_runner (0.1.0)
-      logging
+      logging (~> 2.1)
 
 PATH
   remote: .

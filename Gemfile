@@ -4,5 +4,5 @@ source 'https://rubygems.org'
 gemspec
 
 # FIXME
-## Replace this with the gem from Rubygems when published
-gem 'daemon_runner', path: '../daemon_runner'
+## Change this when the gem is published to Rubygems
+gem 'daemon_runner', git: 'git@github.com:rapid7/daemon_runner.git', ref: '0.1.0.rc1'

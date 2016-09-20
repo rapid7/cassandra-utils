@@ -1,5 +1,4 @@
-# FIXME: When this gem is published uncomment this line
-#require 'daemon_runner'
+require 'daemon_runner'
 
 module Cassandra
   module Utils
