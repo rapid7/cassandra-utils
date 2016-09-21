@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["Andrew_Thompson@rapid7.com"]
 
   spec.summary       = %q{Utility to manage Cassandra Monitoring and Management}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.homepage      = "https://github.com/rapid7/cassandra-utils"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
