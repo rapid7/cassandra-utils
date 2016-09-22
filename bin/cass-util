@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+require_relative '../lib/cassandra/utils'
+require 'thor'
+
+class CassandraUtils < Thor
+
+  method_option :loop_sleep_time, type: :numeric,
+    required: true, default: 120,
+    desc: 'Frequency tasks are run'
+  desc 'stats', 'Write metrics to Datadog'
+  def stats
+    s = ::Cassandra::Utils::Daemon.new(options)
+    s.start!
+  end
+end
+
+CassandraUtils.start

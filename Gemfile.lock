@@ -1,0 +1,42 @@
+GIT
+  remote: git@github.com:rapid7/daemon_runner.git
+  revision: 2b4139146c86fc3b49febd6cb53b4654774c1181
+  ref: 0.1.0.rc1
+  specs:
+    daemon_runner (0.1.0)
+      logging (~> 2.1)
+
+PATH
+  remote: .
+  specs:
+    cassandra-utils (0.1.0)
+      dogstatsd-ruby (~> 1.6)
+      mixlib-shellout (~> 2.2)
+      thor (~> 0.19)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    dogstatsd-ruby (1.6.0)
+    little-plugger (1.1.4)
+    logging (2.1.0)
+      little-plugger (~> 1.1)
+      multi_json (~> 1.10)
+    minitest (5.9.0)
+    mixlib-shellout (2.2.7)
+    multi_json (1.12.1)
+    rake (10.5.0)
+    thor (0.19.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bundler (~> 1.12)
+  cassandra-utils!
+  daemon_runner!
+  minitest (~> 5.0)
+  rake (~> 10.0)
+
+BUNDLED WITH
+   1.12.5

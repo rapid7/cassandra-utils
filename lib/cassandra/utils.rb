@@ -1,7 +1,3 @@
-require "cassandra/utils/version"
-
-module Cassandra
-  module Utils
-    # Your code goes here...
-  end
-end
+require_relative 'utils/cli/base'
+require_relative 'utils/daemon'
+require_relative 'utils/stats'
