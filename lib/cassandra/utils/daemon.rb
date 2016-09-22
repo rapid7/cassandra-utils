@@ -6,7 +6,8 @@ module Cassandra
 
       def tasks
         [
-          [::Cassandra::Utils::Stats::Compaction.new, 'run!']
+          [::Cassandra::Utils::Stats::Compaction.new, 'run!'],
+          [::Cassandra::Utils::Stats::Cleanup.new, 'run!']
         ]
       end
     end
