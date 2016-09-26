@@ -5,4 +5,4 @@ gemspec
 
 # FIXME
 ## Change this when the gem is published to Rubygems
-gem 'daemon_runner', git: 'git@github.com:rapid7/daemon_runner.git', ref: '0.1.0.rc1'
+gem 'daemon_runner', git: 'git@github.com:rapid7/daemon_runner.git', ref: '0.1.0'
