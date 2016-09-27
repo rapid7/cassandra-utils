@@ -1,33 +1,17 @@
-require 'mixlib/shellout'
+require 'daemon_runner'
 require 'statsd'
 
 module Cassandra
   module Utils
     module CLI
-      class Base
-        attr_reader :command, :stdout
-
-        def cwd
-          '/tmp'
-        end
-
-        def timeout
-          15
-        end
-
-        def runner
-          @command ||= Mixlib::ShellOut.new(command, :cwd => cwd, :timeout => timeout)
-        end
+      class Base < ::DaemonRunner::ShellOut
 
         def output
           raise NotImplementedError, 'Must implement this in a subclass'
         end
 
         def run!
-          runner
-          @command.run_command
-          @command.error!
-          @stdout = @command.stdout
+          super
           out = output
           push_metric(out)
           out
