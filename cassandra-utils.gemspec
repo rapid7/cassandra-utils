@@ -26,7 +26,6 @@ Gem::Specification.new do |spec|
   spec.executables   = ["cass-util"]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "mixlib-shellout", "~> 2.2"
   spec.add_dependency "dogstatsd-ruby", "~> 1.6"
   spec.add_dependency "thor", "~> 0.19"
 
