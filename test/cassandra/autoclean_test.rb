@@ -29,7 +29,7 @@ describe Cassandra::Utils::Autoclean do
     end
 
     it 'returns nil when addresses do not exist' do
-      Socket.stub :ip_address_list, lambda { return [] } do
+      Socket.stub :ip_address_list, lambda { [] } do
         @cleaner.address.must_be_nil
       end
     end
@@ -58,6 +58,12 @@ describe Cassandra::Utils::Autoclean do
   end
 
   describe :tokens do
+    it 'returns no tokens without an address' do
+      Socket.stub :ip_address_list, lambda { [] } do
+        @cleaner.tokens.must_equal []
+      end
+    end
+
     it 'returns tokens owned by this node' do
       shellout = lambda do |command, options|
         command.must_equal 'nodetool ring'
