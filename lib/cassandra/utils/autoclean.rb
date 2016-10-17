@@ -8,6 +8,31 @@ module Cassandra
      def run!
      end
 
+     # Get the cached tokens this node owns
+     #
+     # @return [Array<String>] Cached tokens
+     #
+     def cached_tokens
+       begin
+         data = File.read token_cache
+         data = JSON.parse data
+         return nil unless data['version'] == ::Cassandra::Utils::VERSION
+
+         tokens = data['tokens']
+         return nil if tokens.nil?
+         return nil unless tokens.respond_to? :each
+
+         tokens.sort!
+         tokens
+       # Token file could not be opend
+       rescue Errno::ENOENT
+         nil
+       # Token file could not be parsed
+       rescue JSON::ParserError
+         nil
+       end
+     end
+
      def save_tokens
        data = {
          :timestamp => Time.now.iso8601,

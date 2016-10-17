@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'tempfile'
 
 # IPV4 regex pulled from Logstash's grok patterns
 # https://github.com/logstash-plugins/logstash-patterns-core/blob/v4.0.2/patterns/grok-patterns#L30
@@ -101,9 +102,8 @@ describe Cassandra::Utils::Autoclean do
   end
 
   describe :save_tokens do
-    it '' do
+    it 'saves tokens as JSON to disk' do
       token_cache = lambda do
-        require 'tempfile'
         @token_cache ||= Tempfile.new('autoclean')
       end
 
@@ -121,6 +121,92 @@ describe Cassandra::Utils::Autoclean do
           data['tokens'].must_equal ['6', '7', '8']
           data['version'].must_equal ::Cassandra::Utils::VERSION
         end
+      end
+    end
+  end
+
+  describe :cached_tokens do
+    it 'returns nil if token file does not exist' do
+      token_cache = lambda do
+        if @token_cache.nil?
+          @token_cache = Tempfile.new('autoclean')
+          @token_cache.close
+          @token_cache.unlink
+        end
+        @token_cache
+      end
+
+      @cleaner.stub :token_cache, token_cache do
+        @cleaner.cached_tokens.must_be_nil
+      end
+    end
+
+    it 'returns nil if token file fails to parse' do
+      token_cache = lambda do
+        if @token_cache.nil?
+          @token_cache = Tempfile.new('autoclean')
+          @token_cache.write('')
+          @token_cache.flush
+        end
+        @token_cache
+      end
+
+      @cleaner.stub :token_cache, token_cache do
+        @cleaner.cached_tokens.must_be_nil
+      end
+    end
+
+    it 'returns nil if token file is corrupt' do
+      token_cache = lambda do
+        if @token_cache.nil?
+          @token_cache = Tempfile.new('autoclean')
+          @token_cache.write({
+            :version => ::Cassandra::Utils::VERSION,
+            :tokens => "these are not the tokens you're looking for"
+          }.to_json)
+          @token_cache.flush
+        end
+        @token_cache
+      end
+
+      @cleaner.stub :token_cache, token_cache do
+        @cleaner.cached_tokens.must_be_nil
+      end
+    end
+
+    it 'returns nil if version does not match' do
+      token_cache = lambda do
+        if @token_cache.nil?
+          @token_cache = Tempfile.new('autoclean')
+          @token_cache.write({
+            :version => -1,
+            :tokens => ['3', '1', '2']
+          }.to_json)
+          @token_cache.flush
+        end
+        @token_cache
+      end
+
+      @cleaner.stub :token_cache, token_cache do
+        @cleaner.cached_tokens.must_be_nil
+      end
+    end
+
+    it 'returns sorted cached tokens' do
+      token_cache = lambda do
+        if @token_cache.nil?
+          @token_cache = Tempfile.new('autoclean')
+          @token_cache.write({
+            :version => ::Cassandra::Utils::VERSION,
+            :tokens => ['3', '1', '2']
+          }.to_json)
+          @token_cache.flush
+        end
+        @token_cache
+      end
+
+      @cleaner.stub :token_cache, token_cache do
+        @cleaner.cached_tokens.must_equal ['1', '2', '3']
       end
     end
   end
