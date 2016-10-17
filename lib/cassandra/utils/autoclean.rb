@@ -8,7 +8,7 @@ module Cassandra
 
      # Get the IP address of this node
      #
-     # @return [String] IP address of this node
+     # @return [String, nil] IP address of this node
      #
      def address
        if @address.nil? || @address.empty?
