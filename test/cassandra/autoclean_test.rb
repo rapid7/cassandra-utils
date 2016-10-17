@@ -99,4 +99,29 @@ describe Cassandra::Utils::Autoclean do
       end
     end
   end
+
+  describe :save_tokens do
+    it '' do
+      token_cache = lambda do
+        require 'tempfile'
+        @token_cache ||= Tempfile.new('autoclean')
+      end
+
+      tokens = lambda do
+        ['6', '7', '8']
+      end
+
+      @cleaner.stub :token_cache, token_cache do
+        @cleaner.stub :tokens, tokens do
+          @cleaner.save_tokens
+
+          data = File.read token_cache.call
+          data = JSON.parse data
+
+          data['tokens'].must_equal ['6', '7', '8']
+          data['version'].must_equal ::Cassandra::Utils::VERSION
+        end
+      end
+    end
+  end
 end

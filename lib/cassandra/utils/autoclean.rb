@@ -1,9 +1,22 @@
 require 'socket'
+require 'json'
+require 'time'
 
 module Cassandra
   module Utils
    class Autoclean
      def run!
+     end
+
+     def save_tokens
+       data = {
+         :timestamp => Time.now.iso8601,
+         :tokens => tokens,
+         :version => ::Cassandra::Utils::VERSION
+       }
+
+       token_cache.write data.to_json
+       token_cache.flush
      end
 
      # Get the tokens this node owns
@@ -51,6 +64,14 @@ module Cassandra
        @nodetool_ring.run_command
        @nodetool_ring.error!
        @nodetool_ring.stdout
+     end
+
+     # Get the cache tokens wil be saved in
+     #
+     # @return [File] File where tokens wil be saved
+     #
+     def token_cache
+       File.new('/tmp/autoclean-tokens.json')
      end
    end
   end
