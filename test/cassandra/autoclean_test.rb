@@ -126,7 +126,7 @@ describe Cassandra::Utils::Autoclean do
   end
 
   describe :cached_tokens do
-    it 'returns nil if token file does not exist' do
+    it 'returns no tokens if token file does not exist' do
       token_cache = lambda do
         if @token_cache.nil?
           @token_cache = Tempfile.new('autoclean')
@@ -137,11 +137,11 @@ describe Cassandra::Utils::Autoclean do
       end
 
       @cleaner.stub :token_cache, token_cache do
-        @cleaner.cached_tokens.must_be_nil
+        @cleaner.cached_tokens.must_equal []
       end
     end
 
-    it 'returns nil if token file fails to parse' do
+    it 'returns not tokens if token file fails to parse' do
       token_cache = lambda do
         if @token_cache.nil?
           @token_cache = Tempfile.new('autoclean')
@@ -152,11 +152,11 @@ describe Cassandra::Utils::Autoclean do
       end
 
       @cleaner.stub :token_cache, token_cache do
-        @cleaner.cached_tokens.must_be_nil
+        @cleaner.cached_tokens.must_equal []
       end
     end
 
-    it 'returns nil if token file is corrupt' do
+    it 'returns no tokens if token file is corrupt' do
       token_cache = lambda do
         if @token_cache.nil?
           @token_cache = Tempfile.new('autoclean')
@@ -170,11 +170,11 @@ describe Cassandra::Utils::Autoclean do
       end
 
       @cleaner.stub :token_cache, token_cache do
-        @cleaner.cached_tokens.must_be_nil
+        @cleaner.cached_tokens.must_equal []
       end
     end
 
-    it 'returns nil if version does not match' do
+    it 'returns no tokens if version does not match' do
       token_cache = lambda do
         if @token_cache.nil?
           @token_cache = Tempfile.new('autoclean')
@@ -188,7 +188,7 @@ describe Cassandra::Utils::Autoclean do
       end
 
       @cleaner.stub :token_cache, token_cache do
-        @cleaner.cached_tokens.must_be_nil
+        @cleaner.cached_tokens.must_equal []
       end
     end
 
