@@ -38,11 +38,8 @@ module Cassandra
 
        tokens.sort!
        tokens
-     # Token file could not be opend
-     rescue Errno::ENOENT
-       []
-     # Token file could not be parsed
-     rescue JSON::ParserError
+     # Token file could not be opend or parsed
+     rescue Errno::ENOENT, JSON::ParserError
        []
      end
 
