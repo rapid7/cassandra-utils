@@ -1,11 +1,26 @@
 require 'socket'
 require 'json'
 require 'time'
+require 'set'
+require_relative 'version'
 
 module Cassandra
   module Utils
    class Autoclean
+     attr_accessor :interval
+
+     def initialize
+       @interval = 60
+     end
+
      def run!
+       new_tokens = Set.new tokens
+       old_tokens = Set.new cached_tokens
+       if new_tokens != old_tokens
+         cleaner = nodetool_cleanup
+         sleep cleaner_check_timeout while cleaner.alive?
+         save_tokens if cleaner.join == 0
+       end
      end
 
      # Get the cached tokens this node owns
@@ -89,6 +104,17 @@ module Cassandra
        @nodetool_ring.run_command
        @nodetool_ring.error!
        @nodetool_ring.stdout
+     end
+
+     # Run "nodetool cleanup" command
+     #
+     # @return [Thread] Thread that monitors the command until it's done
+     #
+     def nodetool_cleanup
+       # The `pgroup: true` option spawns cleanup in its own process group.
+       # So if this process dies, cleanup continues to run.
+       pid = Process.spawn('nodetool', 'cleanup', pgroup: true)
+       Process.detach pid
      end
 
      # Get the cache tokens wil be saved in

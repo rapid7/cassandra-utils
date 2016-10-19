@@ -1,5 +1,6 @@
 require 'test_helper'
 require 'tempfile'
+require 'ostruct'
 
 # IPV4 regex pulled from Logstash's grok patterns
 # https://github.com/logstash-plugins/logstash-patterns-core/blob/v4.0.2/patterns/grok-patterns#L30
@@ -19,9 +20,31 @@ class MockShellOut
   end
 end
 
+class MockNodetoolCleanup
+  def initialize options
+    options = OpenStruct.new(options)
+    @checks = options.times_to_call.to_i
+    @status = options.exit_status.to_i
+  end
+
+  def alive?
+    @checks -= 1
+    @checks > 0
+  end
+
+  def join
+    @status
+  end
+
+  def validate!
+    @checks.must_equal 0
+  end
+end
+
 describe Cassandra::Utils::Autoclean do
   before do
     @cleaner = Cassandra::Utils::Autoclean.new
+    @cleaner.interval = 1
   end
 
   describe :address do
@@ -208,6 +231,89 @@ describe Cassandra::Utils::Autoclean do
       @cleaner.stub :token_cache, token_cache do
         @cleaner.cached_tokens.must_equal ['1', '2', '3']
       end
+    end
+  end
+
+  describe :run! do
+    it 'skips cleanup if tokens have not changed' do
+      nodetool_cleanup = lambda do
+        throw 'nodetool clenaup should not run'
+      end
+
+      tokens = ['1', '2', '3']
+      cached_tokens = ['1', '2', '3']
+
+      @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
+        @cleaner.stub :cached_tokens, cached_tokens do
+          @cleaner.stub :tokens, tokens do
+            @cleaner.run!
+          end
+        end
+      end
+    end
+
+    it 'runs cleanup if tokens are not cached' do
+      nodetool_cleanup = MockNodetoolCleanup.new(times_to_call: 1, exit_status: 0)
+      token_cache = Tempfile.new('autoclean')
+      tokens = ['1', '2', '3']
+      cached_tokens = []
+
+      @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
+        @cleaner.stub :token_cache, token_cache do
+          @cleaner.stub :cached_tokens, cached_tokens do
+            @cleaner.stub :tokens, tokens do
+              @cleaner.run!
+            end
+          end
+        end
+      end
+
+      nodetool_cleanup.validate!
+    end
+
+    it 'saves tokens when cleanup finishes' do
+      nodetool_cleanup = MockNodetoolCleanup.new(times_to_call: 1, exit_status: 0)
+      token_cache = Tempfile.new('autoclean')
+      tokens = ['1', '2', '3']
+      cached_tokens = []
+
+      @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
+        @cleaner.stub :token_cache, token_cache do
+          @cleaner.stub :cached_tokens, cached_tokens do
+            @cleaner.stub :tokens, tokens do
+              @cleaner.run!
+            end
+          end
+        end
+      end
+
+      nodetool_cleanup.validate!
+
+      tokens = File.read token_cache
+      tokens = JSON.parse tokens
+      tokens = tokens['tokens'].sort
+      tokens.must_equal ['1', '2', '3']
+    end
+
+    it 'skips token caching if cleanup fails' do
+      nodetool_cleanup = MockNodetoolCleanup.new(times_to_call: 1, exit_status: 1)
+      token_cache = Tempfile.new('autoclean')
+      tokens = ['1', '2', '3']
+      cached_tokens = []
+
+      @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
+        @cleaner.stub :token_cache, token_cache do
+          @cleaner.stub :cached_tokens, cached_tokens do
+            @cleaner.stub :tokens, tokens do
+              @cleaner.run!
+            end
+          end
+        end
+      end
+
+      nodetool_cleanup.validate!
+
+      File.read(token_cache).must_be_empty
     end
   end
 end
