@@ -28,24 +28,22 @@ module Cassandra
      # @return [Array<String>] Cached tokens
      #
      def cached_tokens
-       begin
-         data = File.read token_cache
-         data = JSON.parse data
-         return [] unless data['version'] == ::Cassandra::Utils::VERSION
+       data = File.read token_cache
+       data = JSON.parse data
+       return [] unless data['version'] == ::Cassandra::Utils::VERSION
 
-         tokens = data['tokens']
-         return [] if tokens.nil?
-         return [] unless tokens.respond_to? :each
+       tokens = data['tokens']
+       return [] if tokens.nil?
+       return [] unless tokens.respond_to? :each
 
-         tokens.sort!
-         tokens
-       # Token file could not be opend
-       rescue Errno::ENOENT
-         []
-       # Token file could not be parsed
-       rescue JSON::ParserError
-         []
-       end
+       tokens.sort!
+       tokens
+     # Token file could not be opend
+     rescue Errno::ENOENT
+       []
+     # Token file could not be parsed
+     rescue JSON::ParserError
+       []
      end
 
      def save_tokens
