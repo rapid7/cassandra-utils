@@ -24,28 +24,23 @@ end
 class MockNodetoolCleanup
   def initialize options
     options = OpenStruct.new(options)
-    @checks = options.times_to_call.to_i
     @status = options.exit_status.to_i
-  end
-
-  def alive?
-    @checks -= 1
-    @checks > 0
+    @joined = false
   end
 
   def join
+    @joined = true
     @status
   end
 
   def validate!
-    @checks.must_equal 0
+    @joined.must_equal true
   end
 end
 
 describe Cassandra::Utils::Autoclean do
   before do
     @cleaner = Cassandra::Utils::Autoclean.new
-    @cleaner.interval = 0
   end
 
   describe :address do
@@ -219,7 +214,7 @@ describe Cassandra::Utils::Autoclean do
     end
 
     it 'runs cleanup if tokens are not cached' do
-      nodetool_cleanup = MockNodetoolCleanup.new(times_to_call: 1, exit_status: 0)
+      nodetool_cleanup = MockNodetoolCleanup.new(exit_status: 0)
       token_cache = Tempfile.new('autoclean')
       tokens = ['1', '2', '3']
       cached_tokens = []
@@ -238,7 +233,7 @@ describe Cassandra::Utils::Autoclean do
     end
 
     it 'saves tokens when cleanup finishes' do
-      nodetool_cleanup = MockNodetoolCleanup.new(times_to_call: 1, exit_status: 0)
+      nodetool_cleanup = MockNodetoolCleanup.new(exit_status: 0)
       token_cache = Tempfile.new('autoclean')
       tokens = ['1', '2', '3']
       cached_tokens = []
@@ -262,7 +257,7 @@ describe Cassandra::Utils::Autoclean do
     end
 
     it 'skips token caching if cleanup fails' do
-      nodetool_cleanup = MockNodetoolCleanup.new(times_to_call: 1, exit_status: 1)
+      nodetool_cleanup = MockNodetoolCleanup.new(exit_status: 1)
       token_cache = Tempfile.new('autoclean')
       tokens = ['1', '2', '3']
       cached_tokens = []

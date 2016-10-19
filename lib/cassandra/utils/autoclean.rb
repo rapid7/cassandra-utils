@@ -7,18 +7,11 @@ require_relative 'version'
 module Cassandra
   module Utils
    class Autoclean
-     attr_accessor :interval
-
-     def initialize
-       @interval = 60
-     end
-
      def run!
        new_tokens = Set.new tokens
        old_tokens = Set.new cached_tokens
        if new_tokens != old_tokens
          cleaner = nodetool_cleanup
-         sleep cleaner_check_timeout while cleaner.alive?
          save_tokens if cleaner.join == 0
        end
      end
