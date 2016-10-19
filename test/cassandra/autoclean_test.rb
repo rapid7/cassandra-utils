@@ -1,6 +1,7 @@
 require 'test_helper'
 require 'tempfile'
 require 'ostruct'
+require 'ipaddr'
 
 # IPV4 regex pulled from Logstash's grok patterns
 # https://github.com/logstash-plugins/logstash-patterns-core/blob/v4.0.2/patterns/grok-patterns#L30
@@ -44,7 +45,7 @@ end
 describe Cassandra::Utils::Autoclean do
   before do
     @cleaner = Cassandra::Utils::Autoclean.new
-    @cleaner.interval = 1
+    @cleaner.interval = 0
   end
 
   describe :address do
@@ -53,27 +54,24 @@ describe Cassandra::Utils::Autoclean do
     end
 
     it 'returns nil when addresses do not exist' do
-      Socket.stub :ip_address_list, lambda { [] } do
+      Socket.stub :ip_address_list, [] do
         @cleaner.address.must_be_nil
       end
     end
 
     it 'returns the first private IPV4 address' do
-      ipv6 = lambda do |address|
-        require 'ipaddr'
+      def ipv6 address
         IPAddr.new(address).ipv4_mapped.to_string
       end
 
-      addresses = lambda do
-        [
-          Addrinfo.tcp('127.0.0.1', 0),           # Loopback IPV4 address
-          Addrinfo.tcp(ipv6.call('52.0.0.1'), 0), # Public IPV6 address
-          Addrinfo.tcp('52.0.0.1', 0),            # Public IPV4 address
-          Addrinfo.tcp(ipv6.call('10.0.0.2'), 0), # Private IPV6 address
-          Addrinfo.tcp('10.0.0.1', 0),            # Private IPV4 address
-          Addrinfo.tcp('10.0.0.2', 0),            # Private IPV4 address
-        ]
-      end
+      addresses = [
+        Addrinfo.tcp('127.0.0.1', 0),      # Loopback IPV4 address
+        Addrinfo.tcp(ipv6('52.0.0.1'), 0), # Public IPV6 address
+        Addrinfo.tcp('52.0.0.1', 0),       # Public IPV4 address
+        Addrinfo.tcp(ipv6('10.0.0.2'), 0), # Private IPV6 address
+        Addrinfo.tcp('10.0.0.1', 0),       # Private IPV4 address
+        Addrinfo.tcp('10.0.0.2', 0),       # Private IPV4 address
+      ]
 
       Socket.stub :ip_address_list, addresses do
         @cleaner.address.must_equal '10.0.0.1'
@@ -83,7 +81,7 @@ describe Cassandra::Utils::Autoclean do
 
   describe :tokens do
     it 'returns no tokens without an address' do
-      Socket.stub :ip_address_list, lambda { [] } do
+      Socket.stub :ip_address_list,  [] do
         @cleaner.tokens.must_equal []
       end
     end
@@ -112,9 +110,7 @@ describe Cassandra::Utils::Autoclean do
         MockShellOut.new(results)
       end
 
-      addresses = lambda do
-        [Addrinfo.tcp('10.0.0.1', 0)]
-      end
+      addresses = [Addrinfo.tcp('10.0.0.1', 0)]
 
       Mixlib::ShellOut.stub :new, shellout do
         Socket.stub :ip_address_list, addresses do
@@ -126,19 +122,14 @@ describe Cassandra::Utils::Autoclean do
 
   describe :save_tokens do
     it 'saves tokens as JSON to disk' do
-      token_cache = lambda do
-        @token_cache ||= Tempfile.new('autoclean')
-      end
-
-      tokens = lambda do
-        ['6', '7', '8']
-      end
+      token_cache = Tempfile.new('autoclean')
+      tokens = ['6', '7', '8']
 
       @cleaner.stub :token_cache, token_cache do
         @cleaner.stub :tokens, tokens do
           @cleaner.save_tokens
 
-          data = File.read token_cache.call
+          data = File.read token_cache
           data = JSON.parse data
 
           data['tokens'].must_equal ['6', '7', '8']
@@ -150,14 +141,9 @@ describe Cassandra::Utils::Autoclean do
 
   describe :cached_tokens do
     it 'returns no tokens if token file does not exist' do
-      token_cache = lambda do
-        if @token_cache.nil?
-          @token_cache = Tempfile.new('autoclean')
-          @token_cache.close
-          @token_cache.unlink
-        end
-        @token_cache
-      end
+      token_cache = Tempfile.new('autoclean')
+      token_cache.close
+      token_cache.unlink
 
       @cleaner.stub :token_cache, token_cache do
         @cleaner.cached_tokens.must_equal []
@@ -165,14 +151,9 @@ describe Cassandra::Utils::Autoclean do
     end
 
     it 'returns not tokens if token file fails to parse' do
-      token_cache = lambda do
-        if @token_cache.nil?
-          @token_cache = Tempfile.new('autoclean')
-          @token_cache.write('')
-          @token_cache.flush
-        end
-        @token_cache
-      end
+      token_cache = Tempfile.new('autoclean')
+      token_cache.write('')
+      token_cache.flush
 
       @cleaner.stub :token_cache, token_cache do
         @cleaner.cached_tokens.must_equal []
@@ -180,17 +161,12 @@ describe Cassandra::Utils::Autoclean do
     end
 
     it 'returns no tokens if token file is corrupt' do
-      token_cache = lambda do
-        if @token_cache.nil?
-          @token_cache = Tempfile.new('autoclean')
-          @token_cache.write({
-            :version => ::Cassandra::Utils::VERSION,
-            :tokens => "these are not the tokens you're looking for"
-          }.to_json)
-          @token_cache.flush
-        end
-        @token_cache
-      end
+      token_cache = Tempfile.new('autoclean')
+      token_cache.write({
+        :version => ::Cassandra::Utils::VERSION,
+        :tokens => "these are not the tokens you're looking for"
+      }.to_json)
+      token_cache.flush
 
       @cleaner.stub :token_cache, token_cache do
         @cleaner.cached_tokens.must_equal []
@@ -198,17 +174,12 @@ describe Cassandra::Utils::Autoclean do
     end
 
     it 'returns no tokens if version does not match' do
-      token_cache = lambda do
-        if @token_cache.nil?
-          @token_cache = Tempfile.new('autoclean')
-          @token_cache.write({
-            :version => -1,
-            :tokens => ['3', '1', '2']
-          }.to_json)
-          @token_cache.flush
-        end
-        @token_cache
-      end
+      token_cache = Tempfile.new('autoclean')
+      token_cache.write({
+        :version => -1,
+        :tokens => ['3', '1', '2']
+      }.to_json)
+      token_cache.flush
 
       @cleaner.stub :token_cache, token_cache do
         @cleaner.cached_tokens.must_equal []
@@ -216,17 +187,12 @@ describe Cassandra::Utils::Autoclean do
     end
 
     it 'returns sorted cached tokens' do
-      token_cache = lambda do
-        if @token_cache.nil?
-          @token_cache = Tempfile.new('autoclean')
-          @token_cache.write({
-            :version => ::Cassandra::Utils::VERSION,
-            :tokens => ['3', '1', '2']
-          }.to_json)
-          @token_cache.flush
-        end
-        @token_cache
-      end
+      token_cache = Tempfile.new('autoclean')
+      token_cache.write({
+        :version => ::Cassandra::Utils::VERSION,
+        :tokens => ['3', '1', '2']
+      }.to_json)
+      token_cache.flush
 
       @cleaner.stub :token_cache, token_cache do
         @cleaner.cached_tokens.must_equal ['1', '2', '3']
