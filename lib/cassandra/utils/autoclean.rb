@@ -7,6 +7,8 @@ require_relative 'version'
 module Cassandra
   module Utils
    class Autoclean
+     # Run the Cassandra cleanup process if necessary
+     #
      def run!
        new_tokens = Set.new tokens
        old_tokens = Set.new cached_tokens
@@ -36,6 +38,9 @@ module Cassandra
        []
      end
 
+     # Save the list of tokens this node owns to disk
+     # These can be read by `cached_tokens`
+     #
      def save_tokens
        data = {
          :timestamp => Time.now.iso8601,
