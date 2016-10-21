@@ -26,6 +26,17 @@ describe Cassandra::Utils::Autoclean do
     @cleaner = Cassandra::Utils::Autoclean.new
   end
 
+  describe :new do
+    it 'defaults to a token cache in $TMPDIR' do
+      @cleaner.token_cache_path.must_match /^#{Dir.tmpdir}/
+    end
+
+    it 'allows setting a custom token cache' do
+      cleaner = Cassandra::Utils::Autoclean.new(token_cache_path: 'autoclean.json')
+      cleaner.token_cache_path.must_match /^autoclean.json$/
+    end
+  end
+
   describe :address do
     it 'resolves IPV4 addresses' do
       @cleaner.address.must_match IPV4

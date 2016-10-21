@@ -2,11 +2,27 @@ require 'socket'
 require 'json'
 require 'time'
 require 'set'
+require 'tmpdir'
 require_relative 'version'
 
 module Cassandra
   module Utils
    class Autoclean
+     # @return [String] the path on disk where tokens will be cached
+     attr_reader :token_cache_path
+
+     # Create a new Autoclean task
+     #
+     # @param options [Object] optional configuration settings
+     # (see #token_cache_path)
+     #
+     # @return [Autoclean]
+     #
+     def initialize(options = {})
+       @token_cache_path = options[:token_cache_path]
+       @token_cache_path ||= File.join(Dir.tmpdir, 'autoclean-tokens.json')
+     end
+
      # Schedule the Cassandra cleanup process to run daily
      #
      def schedule
@@ -157,7 +173,7 @@ module Cassandra
      # @return [File] File where tokens wil be saved
      #
      def token_cache
-       File.new('/tmp/autoclean-tokens.json')
+       File.new(token_cache_path)
      end
    end
   end
