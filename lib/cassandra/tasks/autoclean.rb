@@ -6,7 +6,7 @@ require 'tmpdir'
 require_relative 'version'
 
 module Cassandra
-  module Utils
+  module Tasks
    class Autoclean
      # @return [String] the path on disk where tokens will be cached
      attr_reader :token_cache_path

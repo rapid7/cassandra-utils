@@ -21,9 +21,9 @@ class MockShellOut
   end
 end
 
-describe Cassandra::Utils::Autoclean do
+describe Cassandra::Tasks::Autoclean do
   before do
-    @cleaner = Cassandra::Utils::Autoclean.new
+    @cleaner = Cassandra::Tasks::Autoclean.new
   end
 
   describe :new do
@@ -32,7 +32,7 @@ describe Cassandra::Utils::Autoclean do
     end
 
     it 'allows setting a custom token cache' do
-      cleaner = Cassandra::Utils::Autoclean.new(token_cache_path: 'autoclean.json')
+      cleaner = Cassandra::Tasks::Autoclean.new(token_cache_path: 'autoclean.json')
       cleaner.token_cache_path.must_match /^autoclean.json$/
     end
   end
