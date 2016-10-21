@@ -112,12 +112,8 @@ module Cassandra
      # @return [String, nil] Output from the "nodetool ring" command
      #
      def nodetool_ring
-       @nodetool_ring ||= Mixlib::ShellOut.new('nodetool ring', {
-         :cwd => '/tmp',
-         :timeout => 120
-       })
-       @nodetool_ring.run_command
-       @nodetool_ring.error!
+       @nodetool_ring ||= DaemonRunner::ShellOut.new(command: 'nodetool ring', timeout: 120)
+       @nodetool_ring.run!
        @nodetool_ring.stdout
      end
 
