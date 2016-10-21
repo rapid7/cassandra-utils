@@ -3,7 +3,7 @@ require 'json'
 require 'time'
 require 'set'
 require 'tmpdir'
-require_relative 'version'
+require_relative '../utils/version'
 
 module Cassandra
   module Tasks
