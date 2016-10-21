@@ -191,10 +191,7 @@ describe Cassandra::Tasks::Autoclean do
 
   describe :run! do
     it 'skips cleanup if tokens have not changed' do
-      nodetool_cleanup = lambda do
-        throw 'nodetool clenaup should not run'
-      end
-
+      nodetool_cleanup = lambda { throw 'nodetool clenaup should not run' }
       tokens = ['1', '2', '3']
       cached_tokens = ['1', '2', '3']
 
@@ -223,10 +220,7 @@ describe Cassandra::Tasks::Autoclean do
         end
       end
 
-      tokens = File.read token_cache
-      tokens = JSON.parse tokens
-      tokens = tokens['tokens'].sort
-      tokens.must_equal ['1', '2', '3']
+      JSON.parse(File.read token_cache)['tokens'].must_equal ['1', '2', '3']
     end
 
     it 'skips token caching if cleanup fails' do
@@ -250,9 +244,7 @@ describe Cassandra::Tasks::Autoclean do
 
     it 'tracks existing cleanup processes before launching new ones' do
       find_nodetool_cleanup = 2600
-      exec_nodetool_cleanup = lambda do
-        throw 'nodetool cleanup should not run'
-      end
+      exec_nodetool_cleanup = lambda { throw 'nodetool cleanup should not run' }
       wait_nodetool_cleanup = OpenStruct.new(exitstatus: 0)
       token_cache = Tempfile.new('autoclean')
       tokens = ['1', '2', '3']
