@@ -196,25 +196,6 @@ describe Cassandra::Utils::Autoclean do
       end
     end
 
-    it 'runs cleanup if tokens are not cached' do
-      nodetool_cleanup = OpenStruct.new(exitstatus: 0)
-      token_cache = Tempfile.new('autoclean')
-      tokens = ['1', '2', '3']
-      cached_tokens = []
-
-      @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
-        @cleaner.stub :token_cache, token_cache do
-          @cleaner.stub :cached_tokens, cached_tokens do
-            @cleaner.stub :tokens, tokens do
-              @cleaner.run!
-            end
-          end
-        end
-      end
-
-      nodetool_cleanup.validate!
-    end
-
     it 'saves tokens when cleanup finishes' do
       nodetool_cleanup = OpenStruct.new(exitstatus: 0)
       token_cache = Tempfile.new('autoclean')
@@ -230,8 +211,6 @@ describe Cassandra::Utils::Autoclean do
           end
         end
       end
-
-      nodetool_cleanup.validate!
 
       tokens = File.read token_cache
       tokens = JSON.parse tokens
@@ -254,8 +233,6 @@ describe Cassandra::Utils::Autoclean do
           end
         end
       end
-
-      nodetool_cleanup.validate!
 
       File.read(token_cache).must_be_empty
     end
