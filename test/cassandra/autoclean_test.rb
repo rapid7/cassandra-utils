@@ -236,5 +236,79 @@ describe Cassandra::Utils::Autoclean do
 
       File.read(token_cache).must_be_empty
     end
+
+    it 'tracks existing cleanup processes before launching new ones' do
+      find_nodetool_cleanup = 2600
+      exec_nodetool_cleanup = lambda do
+        throw 'nodetool cleanup should not run'
+      end
+      wait_nodetool_cleanup = OpenStruct.new(exitstatus: 0)
+      token_cache = Tempfile.new('autoclean')
+      tokens = ['1', '2', '3']
+      cached_tokens = []
+
+      @cleaner.stub :find_nodetool_cleanup, find_nodetool_cleanup do
+        @cleaner.stub :exec_nodetool_cleanup, exec_nodetool_cleanup do
+          @cleaner.stub :wait_nodetool_cleanup, wait_nodetool_cleanup do
+            @cleaner.stub :token_cache, token_cache do
+              @cleaner.stub :cached_tokens, cached_tokens do
+                @cleaner.stub :tokens, tokens do
+                  @cleaner.run!
+                end
+              end
+            end
+          end
+        end
+      end
+
+      JSON.parse(File.read token_cache)['tokens'].must_equal ['1', '2', '3']
+    end
+
+    it 'launches a new cleanup processes if an existing one is not found' do
+      exec_nodetool_cleanup = 2600
+      wait_nodetool_cleanup = OpenStruct.new(exitstatus: 0)
+      token_cache = Tempfile.new('autoclean')
+      tokens = ['1', '2', '3']
+      cached_tokens = []
+
+      @cleaner.stub :exec_nodetool_cleanup, exec_nodetool_cleanup do
+        @cleaner.stub :wait_nodetool_cleanup, wait_nodetool_cleanup do
+          @cleaner.stub :token_cache, token_cache do
+            @cleaner.stub :cached_tokens, cached_tokens do
+              @cleaner.stub :tokens, tokens do
+                @cleaner.run!
+              end
+            end
+          end
+        end
+      end
+
+      JSON.parse(File.read token_cache)['tokens'].must_equal ['1', '2', '3']
+    end
+
+    it 'skips saving tokens if an existing cleanup processes times out' do
+      find_nodetool_cleanup = 2600
+      process_wait = lambda do |pid, options|
+        pid.must_equal 2600
+        raise Errno::ECHILD
+      end
+      token_cache = Tempfile.new('autoclean')
+      tokens = ['1', '2', '3']
+      cached_tokens = []
+
+      Process.stub :wait2, process_wait do
+        @cleaner.stub :find_nodetool_cleanup, find_nodetool_cleanup do
+          @cleaner.stub :token_cache, token_cache do
+            @cleaner.stub :cached_tokens, cached_tokens do
+              @cleaner.stub :tokens, tokens do
+                @cleaner.run!
+              end
+            end
+          end
+        end
+      end
+
+      File.read(token_cache).must_be_empty
+    end
   end
 end
