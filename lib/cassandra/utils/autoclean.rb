@@ -13,8 +13,8 @@ module Cassandra
        new_tokens = Set.new tokens
        old_tokens = Set.new cached_tokens
        if new_tokens != old_tokens
-         cleaner = nodetool_cleanup
-         save_tokens if cleaner.join == 0
+         status = nodetool_cleanup
+         save_tokens if !status.nil? && status.exitstatus == 0
        end
      end
 
@@ -99,15 +99,51 @@ module Cassandra
        @nodetool_ring.stdout
      end
 
-     # Run "nodetool cleanup" command
+     # Get the status of a "nodetool cleanup" command
      #
-     # @return [Thread] Thread that monitors the command until it's done
+     # This will atempt to track a running "nodetool cleanup" process if one's
+     # found. If a running process isn't found, a new process will be launched.
+     #
+     # @return [Process::Status, nil]
      #
      def nodetool_cleanup
+       pid = find_nodetool_cleanup
+       pid = exec_nodetool_cleanup if pid.nil?
+       wait_nodetool_cleanup pid
+     end
+
+     # Get the ID of the first running "nodetool cleanup" process found
+     #
+     # @return [Integer, nil]
+     #
+     def find_nodetool_cleanup
+       pids = `pgrep -f 'nodetool cleanup'`.strip.split "\n"
+       return nil if pids.empty?
+       pids.first.to_i
+     end
+
+     # Run "nodetool cleanup" command
+     #
+     # @return [Integer] ID of the "nodetool cleanup" command
+     #
+     def exec_nodetool_cleanup
        # The `pgroup: true` option spawns cleanup in its own process group.
        # So if this process dies, cleanup continues to run.
-       pid = Process.spawn('nodetool', 'cleanup', pgroup: true)
-       Process.detach pid
+       Process.spawn('nodetool', 'cleanup', pgroup: true)
+     end
+
+     # Wait for a "nodetool cleanup" process to exit
+     #
+     # This handles the `SystemCallError` that's raised if no child process is
+     # found. In that case, the returned status will be `nil`.
+     #
+     # @return [Process::Status, nil] status
+     #
+     def wait_nodetool_cleanup pid
+       pid, status = Process.wait2(pid, Process::WUNTRACED)
+       status
+     rescue Errno::ECHILD
+       nil
      end
 
      # Get the cache tokens wil be saved in
