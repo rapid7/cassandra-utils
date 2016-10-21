@@ -7,6 +7,12 @@ require_relative 'version'
 module Cassandra
   module Utils
    class Autoclean
+     # Schedule the Cassandra cleanup process to run daily
+     #
+     def schedule
+       [:interval, '1d']
+     end
+
      # Run the Cassandra cleanup process if necessary
      #
      def run!
