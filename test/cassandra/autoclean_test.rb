@@ -347,7 +347,7 @@ describe Cassandra::Tasks::Autoclean do
     end
 
     it 'skips cleanup if tokens have not changed' do
-      nodetool_cleanup = lambda { throw 'nodetool clenaup should not run' },
+      nodetool_cleanup = lambda { throw 'nodetool clenaup should not run' }
       token_cache = Tempfile.new('autoclean')
 
       @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
