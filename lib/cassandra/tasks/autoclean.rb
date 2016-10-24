@@ -69,12 +69,13 @@ module Cassandra
      def run!
        return unless status == :up
        return unless state == :normal
+
        new_tokens = Set.new tokens
        old_tokens = Set.new cached_tokens
-       if new_tokens != old_tokens
-         status = nodetool_cleanup
-         save_tokens if !status.nil? && status.exitstatus == 0
-       end
+       return if new_tokens == old_tokens
+
+       result = nodetool_cleanup
+       save_tokens if !result.nil? && result.exitstatus == 0
      end
 
      # Get the cached tokens this node owns
