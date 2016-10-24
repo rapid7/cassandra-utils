@@ -31,21 +31,21 @@ module Cassandra
 
      # Return the status of the Cassandra node
      #
-     # A node is considered up if it has a state of "Up" as reported by
+     # A node is considered up if it has a status of "Up" as reported by
      # "nodetool status". If multiple nodes with this node's IP address show
      # up in "nodetool status", this node is considered down.
      #
-     # @return [:Up, :Down]
+     # @return [:up, :down]
      #
      def status
-       return :Down if address.nil?
+       return :down if address.nil?
        results = (nodetool_status || '').split("\n")
        results.map! { |line| line.strip }
        results.select! { |line| line.include? address }
        results.map! { |line| line.split(/\s+/)[0] }
        results.compact!
-       return :Down if results.size != 1
-       (results.first[0] == 'U') ? :Up : :Down
+       return :down if results.size != 1
+       (results.first[0] == 'U') ? :up : :down
      end
 
      # Return the state of the Cassandra node

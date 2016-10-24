@@ -214,7 +214,7 @@ describe Cassandra::Tasks::Autoclean do
 
       Mixlib::ShellOut.stub :new, stub_nodetool_status do
         Socket.stub :ip_address_list, addresses do
-          @cleaner.status.must_equal :Up
+          @cleaner.status.must_equal :up
         end
       end
     end
@@ -224,7 +224,7 @@ describe Cassandra::Tasks::Autoclean do
 
       Mixlib::ShellOut.stub :new, stub_nodetool_status do
         Socket.stub :ip_address_list, addresses do
-          @cleaner.status.must_equal :Down
+          @cleaner.status.must_equal :down
         end
       end
     end
@@ -234,7 +234,7 @@ describe Cassandra::Tasks::Autoclean do
 
       Mixlib::ShellOut.stub :new, stub_nodetool_status do
         Socket.stub :ip_address_list, addresses do
-          @cleaner.status.must_equal :Down
+          @cleaner.status.must_equal :down
         end
       end
     end
@@ -244,7 +244,7 @@ describe Cassandra::Tasks::Autoclean do
 
       Mixlib::ShellOut.stub :new, stub_nodetool_status do
         Socket.stub :ip_address_list, addresses do
-          @cleaner.status.must_equal :Down
+          @cleaner.status.must_equal :down
         end
       end
     end
