@@ -68,6 +68,7 @@ module Cassandra
      #
      def run!
        return unless status == :up
+       return unless state == :normal
        new_tokens = Set.new tokens
        old_tokens = Set.new cached_tokens
        if new_tokens != old_tokens
