@@ -67,6 +67,7 @@ module Cassandra
      # Run the Cassandra cleanup process if necessary
      #
      def run!
+       return unless status == :up
        new_tokens = Set.new tokens
        old_tokens = Set.new cached_tokens
        if new_tokens != old_tokens

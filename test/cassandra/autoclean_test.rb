@@ -298,13 +298,33 @@ describe Cassandra::Tasks::Autoclean do
 
   describe :run! do
     def run_stubbed_cleanup options
+      options[:status] ||= :up
+
       @cleaner.stub :cached_tokens, options[:cached_tokens] do
         @cleaner.stub :tokens, options[:tokens] do
           @cleaner.stub :token_cache, options[:token_cache] do
-            @cleaner.run!
+            @cleaner.stub :status, options[:status] do
+              @cleaner.run!
+            end
           end
         end
       end
+    end
+
+    it 'skips cleanup if status is not up' do
+      nodetool_cleanup = lambda { throw 'nodetool clenaup should not run' }
+      token_cache = Tempfile.new('autoclean')
+
+      @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
+        run_stubbed_cleanup(
+          status: 'down',
+          token_cache: token_cache,
+          tokens: ['1', '2', '3'],
+          cached_tokens: [],
+        )
+      end
+
+      File.read(token_cache).must_be_empty
     end
 
     it 'skips cleanup if tokens have not changed' do
