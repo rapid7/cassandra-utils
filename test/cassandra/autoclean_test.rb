@@ -189,6 +189,67 @@ describe Cassandra::Tasks::Autoclean do
     end
   end
 
+  describe :status do
+    stub_nodetool_status = lambda do |command, options|
+      command.must_equal 'nodetool status'
+
+      results = <<-END
+      Note: Ownership information does not include topology; for complete information, specify a keyspace
+      Datacenter: dc1
+      ===================
+      Status=Up/Down
+      |/ State=Normal/Leaving/Joining/Moving
+      --  Address       Load       Tokens  Owns   Host ID     Rack
+      UN  10.0.0.1      1 GB       256     33%    1           r1
+      DN  10.0.0.2      1 GB       256     33%    2           r2
+      UN  10.0.0.3      1 GB       256     33%    3           r3
+      UN  10.0.0.3      1 GB       256     33%    3           r3
+      END
+
+      MockShellOut.new(results)
+    end
+
+    it 'is up when node is up' do
+      addresses = [Addrinfo.tcp('10.0.0.1', 0)]
+
+      Mixlib::ShellOut.stub :new, stub_nodetool_status do
+        Socket.stub :ip_address_list, addresses do
+          @cleaner.status.must_equal :Up
+        end
+      end
+    end
+
+    it 'is down when node is down' do
+      addresses = [Addrinfo.tcp('10.0.0.2', 0)]
+
+      Mixlib::ShellOut.stub :new, stub_nodetool_status do
+        Socket.stub :ip_address_list, addresses do
+          @cleaner.status.must_equal :Down
+        end
+      end
+    end
+
+    it 'is down when status is ambiguous' do
+      addresses = [Addrinfo.tcp('10.0.0.3', 0)]
+
+      Mixlib::ShellOut.stub :new, stub_nodetool_status do
+        Socket.stub :ip_address_list, addresses do
+          @cleaner.status.must_equal :Down
+        end
+      end
+    end
+
+    it 'is down when node address is not found' do
+      addresses = [Addrinfo.tcp('10.0.0.4', 0)]
+
+      Mixlib::ShellOut.stub :new, stub_nodetool_status do
+        Socket.stub :ip_address_list, addresses do
+          @cleaner.status.must_equal :Down
+        end
+      end
+    end
+  end
+
   describe :run! do
     it 'skips cleanup if tokens have not changed' do
       nodetool_cleanup = lambda { throw 'nodetool clenaup should not run' }

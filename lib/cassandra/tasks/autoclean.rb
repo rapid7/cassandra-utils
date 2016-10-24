@@ -29,6 +29,25 @@ module Cassandra
        [:interval, '1d']
      end
 
+     # Return the status of the Cassandra node
+     #
+     # A node is considered up if it has a state of "Up" as reported by
+     # "nodetool status". If multiple nodes with this node's IP address show
+     # up in "nodetool status", this node is considered down.
+     #
+     # @return [:Up, :Down]
+     #
+     def status
+       return :Down if address.nil?
+       results = (nodetool_status || '').split("\n")
+       results.map! { |line| line.strip }
+       results.select! { |line| line.include? address }
+       results.map! { |line| line.split(/\s+/)[0] }
+       results.compact!
+       return :Down if results.size != 1
+       (results.first[0] == 'U') ? :Up : :Down
+     end
+
      # Run the Cassandra cleanup process if necessary
      #
      def run!
@@ -115,6 +134,16 @@ module Cassandra
        @nodetool_ring ||= DaemonRunner::ShellOut.new(command: 'nodetool ring', timeout: 120)
        @nodetool_ring.run!
        @nodetool_ring.stdout
+     end
+
+     # Run the "nodetool status' command and return the output
+     #
+     # @return [String, nil] Output from the "nodetool status" command
+     #
+     def nodetool_status
+       @nodetool_status ||= DaemonRunner::ShellOut.new(command: 'nodetool status', timeout: 120)
+       @nodetool_status.run!
+       @nodetool_status.stdout
      end
 
      # Get the status of a "nodetool cleanup" command
