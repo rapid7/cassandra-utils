@@ -48,6 +48,22 @@ module Cassandra
        (results.first[0] == 'U') ? :Up : :Down
      end
 
+     # Return the state of the Cassandra node
+     #
+     # The returned state is reported by "nodetool netstats".
+     #
+     # @return [state, nil]
+     #
+     def state
+       results = (nodetool_netstats || '').split("\n")
+       results.map! { |line| line.strip }
+       results.select! { |line| line.include? 'Mode:' }
+       results.map! { |line| line.split(':')[1] }
+       results.compact!
+       return nil if results.size != 1
+       results.first.strip.downcase.to_sym
+     end
+
      # Run the Cassandra cleanup process if necessary
      #
      def run!
@@ -144,6 +160,16 @@ module Cassandra
        @nodetool_status ||= DaemonRunner::ShellOut.new(command: 'nodetool status', timeout: 120)
        @nodetool_status.run!
        @nodetool_status.stdout
+     end
+
+     # Run the "nodetool netstats' command and return the output
+     #
+     # @return [String, nil] Output from the "nodetool netstats" command
+     #
+     def nodetool_netstats
+       @nodetool_netstats ||= DaemonRunner::ShellOut.new(command: 'nodetool netstats', timeout: 120)
+       @nodetool_netstats.run!
+       @nodetool_netstats.stdout
      end
 
      # Get the status of a "nodetool cleanup" command

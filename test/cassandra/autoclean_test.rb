@@ -250,6 +250,52 @@ describe Cassandra::Tasks::Autoclean do
     end
   end
 
+  describe :state do
+    def stub_nodetool_netstats mode
+      lambda do |command, options|
+        command.must_equal 'nodetool netstats'
+
+        results = <<-END
+        Mode: #{mode.upcase}
+        Not sending any streams.
+        Read Repair Statistics:
+        Attempted: 0
+        Mismatch (Blocking): 0
+        Mismatch (Background): 0
+        Pool Name                    Active   Pending      Completed
+        Commands                        n/a         0              1
+        Responses                       n/a         0              1
+        END
+
+        MockShellOut.new(results)
+      end
+    end
+
+    it 'is normal when the node is NORMAL' do
+      Mixlib::ShellOut.stub :new, stub_nodetool_netstats('NORMAL') do
+        @cleaner.state.must_equal :normal
+      end
+    end
+
+    it 'is leaving when the node is LEAVING' do
+      Mixlib::ShellOut.stub :new, stub_nodetool_netstats('LEAVING') do
+        @cleaner.state.must_equal :leaving
+      end
+    end
+
+    it 'is joining when the node is JOINING' do
+      Mixlib::ShellOut.stub :new, stub_nodetool_netstats('JOINING') do
+        @cleaner.state.must_equal :joining
+      end
+    end
+
+    it 'is moving when the node is MOVING' do
+      Mixlib::ShellOut.stub :new, stub_nodetool_netstats('MOVING') do
+        @cleaner.state.must_equal :moving
+      end
+    end
+  end
+
   describe :run! do
     it 'skips cleanup if tokens have not changed' do
       nodetool_cleanup = lambda { throw 'nodetool clenaup should not run' }
