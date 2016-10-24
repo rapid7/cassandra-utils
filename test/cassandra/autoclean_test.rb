@@ -297,34 +297,41 @@ describe Cassandra::Tasks::Autoclean do
   end
 
   describe :run! do
-    it 'skips cleanup if tokens have not changed' do
-      nodetool_cleanup = lambda { throw 'nodetool clenaup should not run' }
-      tokens = ['1', '2', '3']
-      cached_tokens = ['1', '2', '3']
-
-      @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
-        @cleaner.stub :cached_tokens, cached_tokens do
-          @cleaner.stub :tokens, tokens do
+    def run_stubbed_cleanup options
+      @cleaner.stub :cached_tokens, options[:cached_tokens] do
+        @cleaner.stub :tokens, options[:tokens] do
+          @cleaner.stub :token_cache, options[:token_cache] do
             @cleaner.run!
           end
         end
       end
     end
 
+    it 'skips cleanup if tokens have not changed' do
+      nodetool_cleanup = lambda { throw 'nodetool clenaup should not run' },
+      token_cache = Tempfile.new('autoclean')
+
+      @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
+        run_stubbed_cleanup(
+          token_cache: token_cache,
+          tokens: ['1', '2', '3'],
+          cached_tokens: ['1', '2', '3'],
+        )
+      end
+
+      File.read(token_cache).must_be_empty
+    end
+
     it 'saves tokens when cleanup finishes' do
       nodetool_cleanup = OpenStruct.new(exitstatus: 0)
       token_cache = Tempfile.new('autoclean')
-      tokens = ['1', '2', '3']
-      cached_tokens = []
 
       @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
-        @cleaner.stub :token_cache, token_cache do
-          @cleaner.stub :cached_tokens, cached_tokens do
-            @cleaner.stub :tokens, tokens do
-              @cleaner.run!
-            end
-          end
-        end
+        run_stubbed_cleanup(
+          token_cache: token_cache,
+          tokens: ['1', '2', '3'],
+          cached_tokens: [],
+        )
       end
 
       JSON.parse(File.read token_cache)['tokens'].must_equal ['1', '2', '3']
@@ -333,17 +340,13 @@ describe Cassandra::Tasks::Autoclean do
     it 'skips token caching if cleanup fails' do
       nodetool_cleanup = OpenStruct.new(exitstatus: 1)
       token_cache = Tempfile.new('autoclean')
-      tokens = ['1', '2', '3']
-      cached_tokens = []
 
       @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
-        @cleaner.stub :token_cache, token_cache do
-          @cleaner.stub :cached_tokens, cached_tokens do
-            @cleaner.stub :tokens, tokens do
-              @cleaner.run!
-            end
-          end
-        end
+        run_stubbed_cleanup(
+          token_cache: token_cache,
+          tokens: ['1', '2', '3'],
+          cached_tokens: [],
+        )
       end
 
       File.read(token_cache).must_be_empty
@@ -354,19 +357,15 @@ describe Cassandra::Tasks::Autoclean do
       exec_nodetool_cleanup = lambda { throw 'nodetool cleanup should not run' }
       wait_nodetool_cleanup = OpenStruct.new(exitstatus: 0)
       token_cache = Tempfile.new('autoclean')
-      tokens = ['1', '2', '3']
-      cached_tokens = []
 
       @cleaner.stub :find_nodetool_cleanup, find_nodetool_cleanup do
         @cleaner.stub :exec_nodetool_cleanup, exec_nodetool_cleanup do
           @cleaner.stub :wait_nodetool_cleanup, wait_nodetool_cleanup do
-            @cleaner.stub :token_cache, token_cache do
-              @cleaner.stub :cached_tokens, cached_tokens do
-                @cleaner.stub :tokens, tokens do
-                  @cleaner.run!
-                end
-              end
-            end
+            run_stubbed_cleanup(
+              token_cache: token_cache,
+              tokens: ['1', '2', '3'],
+              cached_tokens: [],
+            )
           end
         end
       end
@@ -378,18 +377,14 @@ describe Cassandra::Tasks::Autoclean do
       exec_nodetool_cleanup = 2600
       wait_nodetool_cleanup = OpenStruct.new(exitstatus: 0)
       token_cache = Tempfile.new('autoclean')
-      tokens = ['1', '2', '3']
-      cached_tokens = []
 
       @cleaner.stub :exec_nodetool_cleanup, exec_nodetool_cleanup do
         @cleaner.stub :wait_nodetool_cleanup, wait_nodetool_cleanup do
-          @cleaner.stub :token_cache, token_cache do
-            @cleaner.stub :cached_tokens, cached_tokens do
-              @cleaner.stub :tokens, tokens do
-                @cleaner.run!
-              end
-            end
-          end
+          run_stubbed_cleanup(
+            token_cache: token_cache,
+            tokens: ['1', '2', '3'],
+            cached_tokens: [],
+          )
         end
       end
 
@@ -403,18 +398,14 @@ describe Cassandra::Tasks::Autoclean do
         raise Errno::ECHILD
       end
       token_cache = Tempfile.new('autoclean')
-      tokens = ['1', '2', '3']
-      cached_tokens = []
 
       Process.stub :wait2, process_wait do
         @cleaner.stub :find_nodetool_cleanup, find_nodetool_cleanup do
-          @cleaner.stub :token_cache, token_cache do
-            @cleaner.stub :cached_tokens, cached_tokens do
-              @cleaner.stub :tokens, tokens do
-                @cleaner.run!
-              end
-            end
-          end
+          run_stubbed_cleanup(
+            token_cache: token_cache,
+            tokens: ['1', '2', '3'],
+            cached_tokens: [],
+          )
         end
       end
 
