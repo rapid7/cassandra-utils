@@ -193,7 +193,9 @@ module Cassandra
      # @return [Integer, nil]
      #
      def find_nodetool_cleanup
-       pids = `pgrep -f 'nodetool cleanup'`.strip.split "\n"
+       @pgrep_nodetool_cleanup ||= ::DaemonRunner::ShellOut.new(command: 'pgrep -f "nodetool cleanup"', valid_exit_codes: [0,1])
+       @pgrep_nodetool_cleanup.run!
+       pids = @pgrep_nodetool_cleanup.stdout.strip.split "\n"
        return nil if pids.empty?
        pids.first.to_i
      end
