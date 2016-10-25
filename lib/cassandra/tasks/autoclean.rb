@@ -205,7 +205,8 @@ module Cassandra
      def exec_nodetool_cleanup
        # The `pgroup: true` option spawns cleanup in its own process group.
        # So if this process dies, cleanup continues to run.
-       Process.spawn('nodetool', 'cleanup', pgroup: true)
+       @nodetool_cleanup ||= ::DaemonRunner::ShellOut.new(command: 'nodetool cleanup', wait: false)
+       @nodetool_cleanup.run!
      end
 
      # Wait for a "nodetool cleanup" process to exit
@@ -216,10 +217,7 @@ module Cassandra
      # @return [Process::Status, nil] status
      #
      def wait_nodetool_cleanup pid
-       pid, status = Process.wait2(pid, Process::WUNTRACED)
-       status
-     rescue Errno::ECHILD
-       nil
+       ::DaemonRunner::ShellOut.wait2(pid, Process::WUNTRACED)
      end
 
      # Get the cache tokens wil be saved in

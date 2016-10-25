@@ -9,6 +9,7 @@ IPV4 = Regexp.new('(?<![0-9])(?:(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0
 
 class MockShellOut
   attr_reader :stdout
+  attr_accessor :valid_exit_codes
 
   def initialize(stdout)
     @stdout = stdout
