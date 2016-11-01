@@ -38,11 +38,7 @@ describe Cassandra::Utils::Stats::Health do
 
     it 'skips thrift and gossip checks if node is not NORMAL' do
       @checker.stub :nodetool_netstats, 'Mode: JOINING' do
-        @checker.stub :nodetool_statusthrift, 'down' do
-          @checker.stub :nodetool_statusgossip, 'down' do
-            @checker.run!.must_equal 1
-          end
-        end
+        @checker.run!.must_equal 1
       end
     end
   end
