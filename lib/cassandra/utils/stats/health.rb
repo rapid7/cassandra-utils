@@ -4,9 +4,10 @@ module Cassandra
       class Health < Utils::CLI::Base
         def run!
           running = true
-          running &= nodetool_statusgossip.strip == 'running'
-          running &= nodetool_statusthrift.strip == 'running'
-          running &= state == :normal
+          if state == :normal
+            running &&= nodetool_statusgossip.strip == 'running'
+            running &&= nodetool_statusthrift.strip == 'running'
+          end
           running = to_dd running
           push_metric running
           running
