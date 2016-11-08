@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require_relative '../lib/cassandra/utils'
+require_relative '../lib/cassandra/tasks'
 require 'thor'
 
 class CassandraUtils < Thor
