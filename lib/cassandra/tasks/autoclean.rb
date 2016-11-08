@@ -23,6 +23,8 @@ module Cassandra
      def initialize(options = {})
        @token_cache_path = options[:token_cache_path]
        @token_cache_path ||= File.join(Dir.tmpdir, 'autoclean-tokens.json')
+       @service_name = options[:cleanup_service_name]
+       @lock_count = options[:cleanup_lock_count]
      end
 
      # Schedule the Cassandra cleanup process to run daily
@@ -78,8 +80,10 @@ module Cassandra
        old_tokens = Set.new cached_tokens
        return if new_tokens == old_tokens
 
-       result = nodetool_cleanup
-       save_tokens if !result.nil? && result.exitstatus == 0
+       ::DaemonRunner::Semaphore.lock(@service_name, @lock_count) do
+         result = nodetool_cleanup
+         save_tokens if !result.nil? && result.exitstatus == 0
+       end
      end
 
      # Get the cached tokens this node owns

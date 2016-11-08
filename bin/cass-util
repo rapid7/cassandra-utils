@@ -7,6 +7,12 @@ class CassandraUtils < Thor
   class_option :loop_sleep_time, type: :numeric,
     required: true, default: 120,
     desc: 'Frequency tasks are run'
+  class_option :cleanup_service_name, type: :string,
+    required: true, default: 'cassandra',
+    desc: 'Unique string to be used in obtaining a Semaphore.  Example: cassandra-#{cluster_name}'
+  class_option :cleanup_lock_count, type: :numeric,
+    required: true, default: 1,
+    desc: 'Number of nodes that can obtain a Semaphore lock'
   desc 'util', 'Perform various utilities'
   def util
     s = ::Cassandra::Utils::Daemon.new(options)
