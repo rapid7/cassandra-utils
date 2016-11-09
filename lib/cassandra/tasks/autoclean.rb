@@ -8,6 +8,8 @@ require_relative '../utils/version'
 module Cassandra
   module Tasks
    class Autoclean
+     include ::DaemonRunner::Logger
+
      # @return [String] the path on disk where tokens will be cached
      attr_reader :token_cache_path
 
@@ -38,13 +40,15 @@ module Cassandra
      # @return [:up, :down]
      #
      def status
-       return :down if address.nil?
+       return(:down).tap { logger.warn 'Cassandra node is DOWN' } if address.nil?
        results = (nodetool_status || '').split("\n")
        results.map! { |line| line.strip }
        results.select! { |line| line.include? address }
        results.map! { |line| line.split(/\s+/)[0] }
        results.compact!
-       return :down if results.size != 1
+       return(:down).tap do
+         logger.warn "Cannot find the Cassandra node (#{address}) in `nodetool status`"
+       end if results.size != 1
        (results.first[0] == 'U') ? :up : :down
      end
 
