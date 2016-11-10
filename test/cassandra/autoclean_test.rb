@@ -1,5 +1,5 @@
 require 'test_helper'
-require 'tempfile'
+require 'stringio'
 require 'ostruct'
 require 'ipaddr'
 
@@ -19,6 +19,12 @@ class MockShellOut
   end
 
   def error!
+  end
+end
+
+class StringIO
+  def read
+    send(:string)
   end
 end
 
@@ -112,14 +118,14 @@ describe Cassandra::Tasks::Autoclean do
 
   describe :save_tokens do
     it 'saves tokens as JSON to disk' do
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
       tokens = ['6', '7', '8']
 
       @cleaner.stub :token_cache, token_cache do
         @cleaner.stub :tokens, tokens do
           @cleaner.save_tokens
 
-          data = File.read token_cache
+          data = token_cache.read
           data = JSON.parse data
 
           data['tokens'].must_equal ['6', '7', '8']
@@ -131,9 +137,8 @@ describe Cassandra::Tasks::Autoclean do
 
   describe :cached_tokens do
     it 'returns no tokens if token file does not exist' do
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
       token_cache.close
-      token_cache.unlink
 
       @cleaner.stub :token_cache, token_cache do
         @cleaner.cached_tokens.must_equal []
@@ -141,7 +146,7 @@ describe Cassandra::Tasks::Autoclean do
     end
 
     it 'returns not tokens if token file fails to parse' do
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
       token_cache.write('')
       token_cache.flush
 
@@ -151,7 +156,7 @@ describe Cassandra::Tasks::Autoclean do
     end
 
     it 'returns no tokens if token file is corrupt' do
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
       token_cache.write({
         :version => ::Cassandra::Utils::VERSION,
         :tokens => "these are not the tokens you're looking for"
@@ -164,7 +169,7 @@ describe Cassandra::Tasks::Autoclean do
     end
 
     it 'returns no tokens if version does not match' do
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
       token_cache.write({
         :version => -1,
         :tokens => ['3', '1', '2']
@@ -177,7 +182,7 @@ describe Cassandra::Tasks::Autoclean do
     end
 
     it 'returns sorted cached tokens' do
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
       token_cache.write({
         :version => ::Cassandra::Utils::VERSION,
         :tokens => ['3', '1', '2']
@@ -317,7 +322,7 @@ describe Cassandra::Tasks::Autoclean do
 
     it 'skips cleanup if status is not up' do
       nodetool_cleanup = lambda { throw 'nodetool clenaup should not run' }
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
 
       @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
         run_stubbed_cleanup(
@@ -328,12 +333,12 @@ describe Cassandra::Tasks::Autoclean do
         )
       end
 
-      File.read(token_cache).must_be_empty
+      token_cache.read.must_be_empty
     end
 
     it 'skips cleanup if state is not normal' do
       nodetool_cleanup = lambda { throw 'nodetool clenaup should not run' }
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
 
       @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
         run_stubbed_cleanup(
@@ -344,12 +349,12 @@ describe Cassandra::Tasks::Autoclean do
         )
       end
 
-      File.read(token_cache).must_be_empty
+      token_cache.read.must_be_empty
     end
 
     it 'skips cleanup if tokens have not changed' do
       nodetool_cleanup = lambda { throw 'nodetool clenaup should not run' }
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
 
       @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
         run_stubbed_cleanup(
@@ -359,12 +364,12 @@ describe Cassandra::Tasks::Autoclean do
         )
       end
 
-      File.read(token_cache).must_be_empty
+      token_cache.read.must_be_empty
     end
 
     it 'saves tokens when cleanup finishes' do
       nodetool_cleanup = OpenStruct.new(exitstatus: 0)
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
 
       @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
         run_stubbed_cleanup(
@@ -374,12 +379,12 @@ describe Cassandra::Tasks::Autoclean do
         )
       end
 
-      JSON.parse(File.read token_cache)['tokens'].must_equal ['1', '2', '3']
+      JSON.parse(token_cache.read)['tokens'].must_equal ['1', '2', '3']
     end
 
     it 'skips token caching if cleanup fails' do
       nodetool_cleanup = OpenStruct.new(exitstatus: 1)
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
 
       @cleaner.stub :nodetool_cleanup, nodetool_cleanup do
         run_stubbed_cleanup(
@@ -389,14 +394,14 @@ describe Cassandra::Tasks::Autoclean do
         )
       end
 
-      File.read(token_cache).must_be_empty
+      token_cache.read.must_be_empty
     end
 
     it 'tracks existing cleanup processes before launching new ones' do
       find_nodetool_cleanup = 2600
       exec_nodetool_cleanup = lambda { throw 'nodetool cleanup should not run' }
       wait_nodetool_cleanup = OpenStruct.new(exitstatus: 0)
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
 
       @cleaner.stub :find_nodetool_cleanup, find_nodetool_cleanup do
         @cleaner.stub :exec_nodetool_cleanup, exec_nodetool_cleanup do
@@ -410,13 +415,13 @@ describe Cassandra::Tasks::Autoclean do
         end
       end
 
-      JSON.parse(File.read token_cache)['tokens'].must_equal ['1', '2', '3']
+      JSON.parse(token_cache.read)['tokens'].must_equal ['1', '2', '3']
     end
 
     it 'launches a new cleanup processes if an existing one is not found' do
       exec_nodetool_cleanup = 2600
       wait_nodetool_cleanup = OpenStruct.new(exitstatus: 0)
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
 
       @cleaner.stub :exec_nodetool_cleanup, exec_nodetool_cleanup do
         @cleaner.stub :wait_nodetool_cleanup, wait_nodetool_cleanup do
@@ -428,7 +433,7 @@ describe Cassandra::Tasks::Autoclean do
         end
       end
 
-      JSON.parse(File.read token_cache)['tokens'].must_equal ['1', '2', '3']
+      JSON.parse(token_cache.read)['tokens'].must_equal ['1', '2', '3']
     end
 
     it 'skips saving tokens if an existing cleanup processes times out' do
@@ -437,7 +442,7 @@ describe Cassandra::Tasks::Autoclean do
         pid.must_equal 2600
         raise Errno::ECHILD
       end
-      token_cache = Tempfile.new('autoclean')
+      token_cache = StringIO.new('', 'w+')
 
       Process.stub :wait2, process_wait do
         @cleaner.stub :find_nodetool_cleanup, find_nodetool_cleanup do
@@ -449,7 +454,7 @@ describe Cassandra::Tasks::Autoclean do
         end
       end
 
-      File.read(token_cache).must_be_empty
+      token_cache.read.must_be_empty
     end
   end
 end
