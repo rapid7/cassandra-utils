@@ -83,7 +83,7 @@ module Cassandra
      # @return [Array<String>] Cached tokens
      #
      def cached_tokens
-       data = File.read token_cache
+       data = token_cache.read
        data = JSON.parse data
        return [] unless data['version'] == ::Cassandra::Utils::VERSION
 
@@ -227,7 +227,7 @@ module Cassandra
      # @return [File] File where tokens wil be saved
      #
      def token_cache
-       File.new(token_cache_path)
+       File.new(token_cache_path, 'w+')
      end
    end
   end
