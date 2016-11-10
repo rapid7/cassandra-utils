@@ -227,7 +227,7 @@ module Cassandra
      # @return [File] File where tokens wil be saved
      #
      def token_cache
-       File.new(token_cache_path)
+       File.new(token_cache_path, 'w+')
      end
    end
   end
