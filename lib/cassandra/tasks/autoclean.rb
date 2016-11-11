@@ -188,8 +188,12 @@ module Cassandra
      #
      def nodetool_cleanup
        pid = find_nodetool_cleanup
+       logger.debug "Found nodetool cleanup process #{pid} already running" unless pid.nil?
        pid = exec_nodetool_cleanup if pid.nil?
-       wait_nodetool_cleanup pid
+       logger.debug "Started nodetool cleanup process #{pid}" if pid
+       status = wait_nodetool_cleanup pid
+       logger.debug "Completed nodetool cleanup process #{pid}" if pid
+       status
      end
 
      # Get the ID of the first running "nodetool cleanup" process found
@@ -223,6 +227,7 @@ module Cassandra
      # @return [Process::Status, nil] status
      #
      def wait_nodetool_cleanup pid
+       logger.debug "Waiting for nodetool cleanup process #{pid} to complete"
        ::DaemonRunner::ShellOut.wait2(pid, Process::WUNTRACED)
      end
 
