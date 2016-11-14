@@ -8,8 +8,7 @@ module Cassandra
             running &&= nodetool_statusgossip.strip == 'running'
             running &&= nodetool_statusthrift.strip == 'running'
           end
-          running = to_dd running
-          push_metric running
+          Utils::Statsd.new(metric_name).to_dd(running).push!
           running
         end
 

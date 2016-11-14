@@ -9,7 +9,6 @@ module Cassandra
 
         def output
           cleanup = stdout.lines.any? { |l| l.include?('Cleanup') }
-          to_dd(cleanup)
         end
 
         def metric_name

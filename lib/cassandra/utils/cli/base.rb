@@ -28,7 +28,7 @@ module Cassandra
           @command.error!
           @stdout = @command.stdout
           out = output
-          push_metric(out)
+          Utils::Statsd.new(metric_name).to_dd(out).push!
           out
         end
       end
