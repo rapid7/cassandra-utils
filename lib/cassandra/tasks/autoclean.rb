@@ -158,7 +158,7 @@ module Cassandra
      # @return [String, nil] Output from the "nodetool ring" command
      #
      def nodetool_ring
-       @nodetool_ring ||= DaemonRunner::ShellOut.new(command: 'nodetool ring', timeout: 120)
+       @nodetool_ring ||= DaemonRunner::ShellOut.new(command: 'nodetool ring', timeout: 300)
        @nodetool_ring.run!
        @nodetool_ring.stdout
      end
@@ -168,7 +168,7 @@ module Cassandra
      # @return [String, nil] Output from the "nodetool status" command
      #
      def nodetool_status
-       @nodetool_status ||= DaemonRunner::ShellOut.new(command: 'nodetool status', timeout: 120)
+       @nodetool_status ||= DaemonRunner::ShellOut.new(command: 'nodetool status', timeout: 300)
        @nodetool_status.run!
        @nodetool_status.stdout
      end
@@ -178,7 +178,7 @@ module Cassandra
      # @return [String, nil] Output from the "nodetool netstats" command
      #
      def nodetool_netstats
-       @nodetool_netstats ||= DaemonRunner::ShellOut.new(command: 'nodetool netstats', timeout: 120)
+       @nodetool_netstats ||= DaemonRunner::ShellOut.new(command: 'nodetool netstats', timeout: 300)
        @nodetool_netstats.run!
        @nodetool_netstats.stdout
      end

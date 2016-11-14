@@ -60,7 +60,7 @@ module Cassandra
         # @return [String, nil] Output from the "nodetool netstats" command
         #
         def nodetool_netstats
-          @nodetool_netstats ||= DaemonRunner::ShellOut.new(command: 'nodetool netstats', timeout: 120)
+          @nodetool_netstats ||= DaemonRunner::ShellOut.new(command: 'nodetool netstats', timeout: 300)
           @nodetool_netstats.run!
           @nodetool_netstats.stdout
         end
