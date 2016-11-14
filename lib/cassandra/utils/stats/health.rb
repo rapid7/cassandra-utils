@@ -64,6 +64,10 @@ module Cassandra
           @nodetool_netstats.run!
           @nodetool_netstats.stdout
         end
+
+        def task_id
+          ['health', 'nodetool']
+        end
       end
     end
   end

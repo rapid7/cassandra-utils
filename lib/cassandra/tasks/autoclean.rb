@@ -242,6 +242,10 @@ module Cassandra
      def token_cache
        File.new(token_cache_path, 'w+')
      end
+
+     def task_id
+       ['autoclean', 'nodetool']
+     end
    end
   end
 end
