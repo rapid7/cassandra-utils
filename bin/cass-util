@@ -1,16 +1,28 @@
 #!/usr/bin/env ruby
 require_relative '../lib/cassandra/utils'
+require_relative '../lib/cassandra/tasks'
 require 'thor'
 
 class CassandraUtils < Thor
 
-  method_option :loop_sleep_time, type: :numeric,
+  class_option :loop_sleep_time, type: :numeric,
     required: true, default: 120,
     desc: 'Frequency tasks are run'
-  desc 'stats', 'Write metrics to Datadog'
-  def stats
+  class_option :cleanup_service_name, type: :string,
+    required: true, default: 'cassandra',
+    desc: 'Unique string to be used in obtaining a Semaphore.  Example: cassandra-#{cluster_name}'
+  class_option :cleanup_lock_count, type: :numeric,
+    required: true, default: 1,
+    desc: 'Number of nodes that can obtain a Semaphore lock'
+  desc 'util', 'Perform various utilities'
+  def util
     s = ::Cassandra::Utils::Daemon.new(options)
     s.start!
+  end
+  # Backwards compatibility
+  desc 'stats', '[DEPRECATED - Use util] Write metrics to Datadog'
+  def stats
+    send(:util)
   end
 end
 
