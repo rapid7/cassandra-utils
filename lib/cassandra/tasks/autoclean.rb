@@ -151,6 +151,10 @@ module Cassandra
        @address
      end
 
+     def task_id
+       ['autoclean', 'nodetool']
+     end
+
      private
 
      # Run the "nodetool ring" command and return the output
@@ -241,10 +245,6 @@ module Cassandra
      #
      def token_cache
        File.new(token_cache_path, 'w+')
-     end
-
-     def task_id
-       ['autoclean', 'nodetool']
      end
    end
   end

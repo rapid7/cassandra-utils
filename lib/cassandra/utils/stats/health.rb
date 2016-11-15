@@ -33,6 +33,10 @@ module Cassandra
           results.first.strip.downcase.to_sym
         end
 
+        def task_id
+          ['health', 'nodetool']
+        end
+
         private
 
         # Run the "nodetool statusgossip' command and return the output
@@ -63,10 +67,6 @@ module Cassandra
           @nodetool_netstats ||= DaemonRunner::ShellOut.new(command: 'nodetool netstats', timeout: 300)
           @nodetool_netstats.run!
           @nodetool_netstats.stdout
-        end
-
-        def task_id
-          ['health', 'nodetool']
         end
       end
     end
