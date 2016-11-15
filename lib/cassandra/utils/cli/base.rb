@@ -1,5 +1,4 @@
 require 'mixlib/shellout'
-require 'statsd'
 
 module Cassandra
   module Utils
@@ -29,22 +28,8 @@ module Cassandra
           @command.error!
           @stdout = @command.stdout
           out = output
-          push_metric(out)
+          Utils::Statsd.new(metric_name).to_dd(out).push!
           out
-        end
-
-        protected
-
-        def statsd
-          @statsd ||= ::Statsd.new('localhost', 8125)
-        end
-
-        def push_metric(value)
-          statsd.gauge(metric_name, value)
-        end
-
-        def to_dd(out)
-          out == true ? 1 : 0
         end
       end
     end

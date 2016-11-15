@@ -192,11 +192,17 @@ module Cassandra
      #
      def nodetool_cleanup
        pid = find_nodetool_cleanup
-       logger.debug "Found nodetool cleanup process #{pid} already running" unless pid.nil?
-       pid = exec_nodetool_cleanup if pid.nil?
-       logger.debug "Started nodetool cleanup process #{pid}" if pid
-       status = wait_nodetool_cleanup pid
-       logger.debug "Completed nodetool cleanup process #{pid}" if pid
+       if pid
+         logger.debug "Found nodetool cleanup process #{pid} already running"
+         Utils::Statsd.new('cassandra.cleanup.running').push!(1)
+       end
+       pid = exec_nodetool_cleanup
+       if pid
+         logger.debug "Started nodetool cleanup process #{pid}"
+         Utils::Statsd.new('cassandra.cleanup.running').push!(1)
+         status = wait_nodetool_cleanup pid
+         logger.debug "Completed nodetool cleanup process #{pid}"
+       end
        status
      end
 
