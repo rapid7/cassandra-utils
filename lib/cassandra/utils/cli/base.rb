@@ -11,7 +11,7 @@ module Cassandra
         end
 
         def timeout
-          15
+          300
         end
 
         def runner

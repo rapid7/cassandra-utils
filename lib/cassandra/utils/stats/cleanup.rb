@@ -14,6 +14,10 @@ module Cassandra
         def metric_name
           'cassandra.cleanup.running'
         end
+
+        def task_id
+          ['cleanup', 'nodetool']
+        end
       end
     end
   end

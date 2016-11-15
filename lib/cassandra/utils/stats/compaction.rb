@@ -14,6 +14,10 @@ module Cassandra
         def metric_name
           'cassandra.compaction.running'
         end
+
+        def task_id
+          ['compaction', 'nodetool']
+        end
       end
     end
   end
