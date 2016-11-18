@@ -10,7 +10,7 @@ describe Cassandra::Utils::Stats::Health do
       @checker.stub :nodetool_netstats, 'Mode: NORMAL' do
         @checker.stub :nodetool_statusthrift, 'running' do
           @checker.stub :nodetool_statusgossip, 'running' do
-            @checker.run!.must_equal 1
+            @checker.run!.must_equal true
           end
         end
       end
@@ -20,7 +20,7 @@ describe Cassandra::Utils::Stats::Health do
       @checker.stub :nodetool_netstats, 'Mode: NORMAL' do
         @checker.stub :nodetool_statusgossip, 'down' do
           @checker.stub :nodetool_statusthrift, 'running' do
-            @checker.run!.must_equal 0
+            @checker.run!.must_equal false
           end
         end
       end
@@ -30,7 +30,7 @@ describe Cassandra::Utils::Stats::Health do
       @checker.stub :nodetool_netstats, 'Mode: NORMAL' do
         @checker.stub :nodetool_statusthrift, 'down' do
           @checker.stub :nodetool_statusgossip, 'running' do
-            @checker.run!.must_equal 0
+            @checker.run!.must_equal false
           end
         end
       end
@@ -38,7 +38,7 @@ describe Cassandra::Utils::Stats::Health do
 
     it 'skips thrift and gossip checks if node is not NORMAL' do
       @checker.stub :nodetool_netstats, 'Mode: JOINING' do
-        @checker.run!.must_equal 1
+        @checker.run!.must_equal true
       end
     end
   end
