@@ -25,6 +25,7 @@ module Cassandra
        @token_cache_path ||= File.join(Dir.tmpdir, 'autoclean-tokens.json')
        @service_name = options[:cleanup_service_name]
        @lock_count = options[:cleanup_lock_count]
+       @logger = options[:logger]
      end
 
      # Schedule the Cassandra cleanup process to run daily

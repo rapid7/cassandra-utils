@@ -2,6 +2,7 @@ require 'test_helper'
 require 'stringio'
 require 'ostruct'
 require 'ipaddr'
+require 'logger'
 
 # IPV4 regex pulled from Logstash's grok patterns
 # https://github.com/logstash-plugins/logstash-patterns-core/blob/v4.0.2/patterns/grok-patterns#L30
@@ -30,7 +31,7 @@ end
 
 describe Cassandra::Tasks::Autoclean do
   before do
-    @cleaner = Cassandra::Tasks::Autoclean.new
+    @cleaner = Cassandra::Tasks::Autoclean.new(logger: Logger.new(StringIO.new))
   end
 
   describe :new do
