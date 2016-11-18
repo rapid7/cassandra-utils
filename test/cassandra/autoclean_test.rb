@@ -307,12 +307,18 @@ describe Cassandra::Tasks::Autoclean do
       options[:status] ||= :up
       options[:state] ||= :normal
 
+      semaphore_lock = lambda do |*unused|
+        yield if block_given?
+      end
+
       @cleaner.stub :cached_tokens, options[:cached_tokens] do
         @cleaner.stub :tokens, options[:tokens] do
           @cleaner.stub :token_cache, options[:token_cache] do
             @cleaner.stub :status, options[:status] do
               @cleaner.stub :state, options[:state] do
-                @cleaner.run!
+                DaemonRunner::Semaphore.stub :lock, semaphore_lock do
+                  @cleaner.run!
+                end
               end
             end
           end
