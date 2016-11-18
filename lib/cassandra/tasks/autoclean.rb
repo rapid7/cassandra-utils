@@ -200,7 +200,7 @@ module Cassandra
          logger.debug "Found nodetool cleanup process #{pid} already running"
          Utils::Statsd.new('cassandra.cleanup.running').push!(1)
        end
-       pid = exec_nodetool_cleanup
+       pid = exec_nodetool_cleanup if pid.nil?
        if pid
          logger.debug "Started nodetool cleanup process #{pid}"
          Utils::Statsd.new('cassandra.cleanup.running').push!(1)
