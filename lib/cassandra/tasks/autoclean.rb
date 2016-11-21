@@ -25,6 +25,7 @@ module Cassandra
        @token_cache_path ||= File.join(Dir.tmpdir, 'autoclean-tokens.json')
        @service_name = options[:cleanup_service_name]
        @lock_count = options[:cleanup_lock_count]
+       @logger = options[:logger]
      end
 
      # Schedule the Cassandra cleanup process to run daily
@@ -200,7 +201,7 @@ module Cassandra
          logger.debug "Found nodetool cleanup process #{pid} already running"
          Utils::Statsd.new('cassandra.cleanup.running').push!(1)
        end
-       pid = exec_nodetool_cleanup
+       pid = exec_nodetool_cleanup if pid.nil?
        if pid
          logger.debug "Started nodetool cleanup process #{pid}"
          Utils::Statsd.new('cassandra.cleanup.running').push!(1)
