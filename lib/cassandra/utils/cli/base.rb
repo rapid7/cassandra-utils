@@ -1,4 +1,4 @@
-require 'mixlib/shellout'
+require 'daemon_runner/shell_out'
 
 module Cassandra
   module Utils
@@ -15,7 +15,7 @@ module Cassandra
         end
 
         def runner
-          @command ||= Mixlib::ShellOut.new(command, :cwd => cwd, :timeout => timeout)
+          @command ||= DaemonRunner::ShellOut.new(command, :cwd => cwd, :timeout => timeout)
         end
 
         def output
