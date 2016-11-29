@@ -26,35 +26,41 @@ describe Cassandra::Tasks::SeedRegistry do
     end
   end
 
+  def nodetool_info_mock(options = nil)
+    options ||= {}
+    options[:data_center] ||= 'us-east'
+    options[:rack] ||= '1d'
+
+    return lambda do |command, unused|
+      command.must_equal 'nodetool info'
+
+      results = <<-END
+      Token                  : (invoke with -T/--tokens to see all 256 tokens)
+      ID                     : uuid
+      Gossip active          : true
+      Thrift active          : true
+      Native Transport active: true
+      Load                   : 0.0 GB
+      Generation No          : 0
+      Uptime (seconds)       : 0
+      Heap Memory (MB)       : 0 / 0
+      Off Heap Memory (MB)   : 0
+      Data Center            : #{options[:data_center]}
+      Rack                   : #{options[:rack]}
+      Exceptions             : 0
+      Key Cache              : size 0 (bytes), capacity 0 (bytes), 0 hits, 0 requests, NaN recent hit rate, 0 save period in seconds
+      Row Cache              : size 0 (bytes), capacity 0 (bytes), 0 hits, 0 requests, NaN recent hit rate, 0 save period in seconds
+      END
+
+      MockShellOut.new(results)
+    end
+  end
+
   describe :data_center do
     it 'returns the data center for this node' do
-      shellout = lambda do |command, options|
-        command.must_equal 'nodetool info'
-
-        results = <<-END
-        Token                  : (invoke with -T/--tokens to see all 256 tokens)
-        ID                     : uuid
-        Gossip active          : true
-        Thrift active          : true
-        Native Transport active: true
-        Load                   : 0.0 GB
-        Generation No          : 0
-        Uptime (seconds)       : 0
-        Heap Memory (MB)       : 0 / 0
-        Off Heap Memory (MB)   : 0
-        Data Center            : us-east
-        Rack                   : 1d
-        Exceptions             : 0
-        Key Cache              : size 0 (bytes), capacity 0 (bytes), 0 hits, 0 requests, NaN recent hit rate, 0 save period in seconds
-        Row Cache              : size 0 (bytes), capacity 0 (bytes), 0 hits, 0 requests, NaN recent hit rate, 0 save period in seconds
-        END
-
-        MockShellOut.new(results)
-      end
-
       registry = Cassandra::Tasks::SeedRegistry.new('test')
 
-      Mixlib::ShellOut.stub :new, shellout do
+      Mixlib::ShellOut.stub :new, nodetool_info_mock do
         registry.data_center.must_equal 'us-east'
       end
     end
@@ -62,33 +68,9 @@ describe Cassandra::Tasks::SeedRegistry do
 
   describe :rack do
     it 'returns the rack for this node' do
-      shellout = lambda do |command, options|
-        command.must_equal 'nodetool info'
-
-        results = <<-END
-        Token                  : (invoke with -T/--tokens to see all 256 tokens)
-        ID                     : uuid
-        Gossip active          : true
-        Thrift active          : true
-        Native Transport active: true
-        Load                   : 0.0 GB
-        Generation No          : 0
-        Uptime (seconds)       : 0
-        Heap Memory (MB)       : 0 / 0
-        Off Heap Memory (MB)   : 0
-        Data Center            : us-east
-        Rack                   : 1d
-        Exceptions             : 0
-        Key Cache              : size 0 (bytes), capacity 0 (bytes), 0 hits, 0 requests, NaN recent hit rate, 0 save period in seconds
-        Row Cache              : size 0 (bytes), capacity 0 (bytes), 0 hits, 0 requests, NaN recent hit rate, 0 save period in seconds
-        END
-
-        MockShellOut.new(results)
-      end
-
       registry = Cassandra::Tasks::SeedRegistry.new('test')
 
-      Mixlib::ShellOut.stub :new, shellout do
+      Mixlib::ShellOut.stub :new, nodetool_info_mock do
         registry.rack.must_equal '1d'
       end
     end
