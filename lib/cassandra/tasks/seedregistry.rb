@@ -14,6 +14,12 @@ module Cassandra
        raise ArgumentError.new('cluster_name must not be empty') if @cluster_name.empty?
      end
 
+     # Return the data center the Cassandra node is in
+     #
+     # The returned data center is reported by "nodetool info".
+     #
+     # @return [String, nil]
+     #
      def data_center
        results = (nodetool_info || '').split("\n")
        results.map! { |line| line.strip }
