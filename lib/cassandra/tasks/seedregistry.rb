@@ -24,6 +24,22 @@ module Cassandra
        results.first.strip
      end
 
+     # Return the rack the Cassandra node is in
+     #
+     # The returned rack is reported by "nodetool info".
+     #
+     # @return [String, nil]
+     #
+     def rack
+       results = (nodetool_info || '').split("\n")
+       results.map! { |line| line.strip }
+       results.select! { |line| line.include?('Rack') }
+       results.map! { |line| line.split(':')[1] }
+       results.compact!
+       return nil if results.size != 1
+       results.first.strip
+     end
+
      private
 
      # Run the "nodetool info" command and return the output
