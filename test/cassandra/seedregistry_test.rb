@@ -27,10 +27,14 @@ describe Cassandra::Tasks::SeedRegistry do
     end
   end
 
-  def nodetool_info_mock(options = nil)
-    options ||= {}
-    options[:data_center] ||= 'us-east'
-    options[:rack] ||= '1d'
+  def nodetool_info_mock(options = {})
+    options = {data_center: 'us-east', rack: '1d'}.merge(options)
+    if options[:data_center]
+      options[:data_center] = "Data Center : #{options[:data_center]}"
+    end
+    if options[:rack]
+      options[:rack] = "Rack : #{options[:rack]}"
+    end
 
     return lambda do |command, unused|
       command.must_equal 'nodetool info'
@@ -46,8 +50,8 @@ describe Cassandra::Tasks::SeedRegistry do
       Uptime (seconds)       : 0
       Heap Memory (MB)       : 0 / 0
       Off Heap Memory (MB)   : 0
-      Data Center            : #{options[:data_center]}
-      Rack                   : #{options[:rack]}
+      #{options[:data_center]}
+      #{options[:rack]}
       Exceptions             : 0
       Key Cache              : size 0 (bytes), capacity 0 (bytes), 0 hits, 0 requests, NaN recent hit rate, 0 save period in seconds
       Row Cache              : size 0 (bytes), capacity 0 (bytes), 0 hits, 0 requests, NaN recent hit rate, 0 save period in seconds
@@ -66,6 +70,15 @@ describe Cassandra::Tasks::SeedRegistry do
         registry.data_center.must_equal data_center
       end
     end
+
+    it 'returns nil if the node has no data center' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+      data_center = SecureRandom.hex[0..10]
+
+      Mixlib::ShellOut.stub :new, nodetool_info_mock(data_center: nil) do
+        registry.data_center.must_be_nil
+      end
+    end
   end
 
   describe :rack do
@@ -75,6 +88,14 @@ describe Cassandra::Tasks::SeedRegistry do
 
       Mixlib::ShellOut.stub :new, nodetool_info_mock(rack: rack) do
         registry.rack.must_equal rack
+      end
+    end
+
+    it 'returns nil if the node has no rack' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+
+      Mixlib::ShellOut.stub :new, nodetool_info_mock(rack: nil) do
+        registry.rack.must_be_nil
       end
     end
   end
