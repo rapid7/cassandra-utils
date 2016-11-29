@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'securerandom'
 
 class MockShellOut
   attr_reader :stdout
@@ -59,9 +60,10 @@ describe Cassandra::Tasks::SeedRegistry do
   describe :data_center do
     it 'returns the data center for this node' do
       registry = Cassandra::Tasks::SeedRegistry.new('test')
+      data_center = SecureRandom.hex[0..10]
 
-      Mixlib::ShellOut.stub :new, nodetool_info_mock do
-        registry.data_center.must_equal 'us-east'
+      Mixlib::ShellOut.stub :new, nodetool_info_mock(data_center: data_center) do
+        registry.data_center.must_equal data_center
       end
     end
   end
@@ -69,9 +71,10 @@ describe Cassandra::Tasks::SeedRegistry do
   describe :rack do
     it 'returns the rack for this node' do
       registry = Cassandra::Tasks::SeedRegistry.new('test')
+      rack = SecureRandom.hex[0..10]
 
-      Mixlib::ShellOut.stub :new, nodetool_info_mock do
-        registry.rack.must_equal '1d'
+      Mixlib::ShellOut.stub :new, nodetool_info_mock(rack: rack) do
+        registry.rack.must_equal rack
       end
     end
   end
