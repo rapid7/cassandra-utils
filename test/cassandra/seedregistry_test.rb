@@ -85,4 +85,58 @@ describe Cassandra::Tasks::SeedRegistry do
       end
     end
   end
+
+  describe :state do
+    def stub_nodetool_netstats mode
+      lambda do |command, options|
+        command.must_equal 'nodetool netstats'
+
+        results = <<-END
+        Mode: #{mode.upcase}
+        Not sending any streams.
+        Read Repair Statistics:
+        Attempted: 0
+        Mismatch (Blocking): 0
+        Mismatch (Background): 0
+        Pool Name                    Active   Pending      Completed
+        Commands                        n/a         0              1
+        Responses                       n/a         0              1
+        END
+
+        MockShellOut.new(results)
+      end
+    end
+
+    it 'is normal when the node is NORMAL' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+
+      Mixlib::ShellOut.stub :new, stub_nodetool_netstats('NORMAL') do
+        registry.state.must_equal :normal
+      end
+    end
+
+    it 'is leaving when the node is LEAVING' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+
+      Mixlib::ShellOut.stub :new, stub_nodetool_netstats('LEAVING') do
+        registry.state.must_equal :leaving
+      end
+    end
+
+    it 'is joining when the node is JOINING' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+
+      Mixlib::ShellOut.stub :new, stub_nodetool_netstats('JOINING') do
+        registry.state.must_equal :joining
+      end
+    end
+
+    it 'is moving when the node is MOVING' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+
+      Mixlib::ShellOut.stub :new, stub_nodetool_netstats('MOVING') do
+        registry.state.must_equal :moving
+      end
+    end
+  end
 end
