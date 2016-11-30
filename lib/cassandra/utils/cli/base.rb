@@ -15,7 +15,7 @@ module Cassandra
         end
 
         def runner
-          @command ||= DaemonRunner::ShellOut.new(command, :cwd => cwd, :timeout => timeout)
+          @command ||= DaemonRunner::ShellOut.new(command: command, cwd: cwd, timeout: timeout)
         end
 
         def output
