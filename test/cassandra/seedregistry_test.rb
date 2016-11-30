@@ -1,20 +1,6 @@
 require 'test_helper'
 require 'securerandom'
-
-class MockShellOut
-  attr_reader :stdout
-  attr_accessor :valid_exit_codes
-
-  def initialize(stdout)
-    @stdout = stdout
-  end
-
-  def run_command
-  end
-
-  def error!
-  end
-end
+require 'mock_shell_out'
 
 describe Cassandra::Tasks::SeedRegistry do
   describe :new do
