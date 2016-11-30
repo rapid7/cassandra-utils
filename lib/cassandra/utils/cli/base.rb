@@ -24,8 +24,7 @@ module Cassandra
 
         def run!
           runner
-          @command.run_command
-          @command.error!
+          @command.run!
           @stdout = @command.stdout
           out = output
           Utils::Statsd.new(metric_name).to_dd(out).push!
