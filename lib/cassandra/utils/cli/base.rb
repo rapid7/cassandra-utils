@@ -15,7 +15,7 @@ module Cassandra
         end
 
         def runner
-          @command ||= DaemonRunner::ShellOut.new(command, :cwd => cwd, :timeout => timeout)
+          @command ||= DaemonRunner::ShellOut.new(command: command, cwd: cwd, timeout: timeout)
         end
 
         def output
@@ -24,8 +24,7 @@ module Cassandra
 
         def run!
           runner
-          @command.run_command
-          @command.error!
+          @command.run!
           @stdout = @command.stdout
           out = output
           Utils::Statsd.new(metric_name).to_dd(out).push!
