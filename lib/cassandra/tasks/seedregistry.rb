@@ -20,6 +20,21 @@ module Cassandra
      #
      def can_seed?
        return false unless state == :normal
+
+       results = (nodetool_info || '').split("\n")
+       results.map! { |line| line.strip }
+
+       filter_results = lambda do |key|
+         potential = results.select { |line| line.include? key }
+         potential.map! { |line| line.split(':')[1] }
+         potential.compact!
+         potential.size == 1 && potential.first.strip == 'true'
+       end
+
+       return false unless filter_results.call('Gossip active')
+       return false unless filter_results.call('Thrift active')
+       return false unless filter_results.call('Native Transport active')
+
        true
      end
 

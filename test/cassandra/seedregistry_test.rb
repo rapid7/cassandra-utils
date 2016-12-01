@@ -150,9 +150,51 @@ describe Cassandra::Tasks::SeedRegistry do
     it 'is false unless the node state is NORMAL' do
       registry = Cassandra::Tasks::SeedRegistry.new('test')
 
-      [:moving, :joining, :leaving].each do |state|
-        registry.stub :state, state do
+      Mixlib::ShellOut.stub :new, nodetool_info_mock do
+        [:moving, :joining, :leaving].each do |state|
+          registry.stub :state, state do
+            registry.can_seed?.must_equal false
+          end
+        end
+      end
+    end
+
+    it 'is false if gossip is down' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+
+      Mixlib::ShellOut.stub :new, nodetool_info_mock(gossip: false) do
+        registry.stub :state, :normal do
           registry.can_seed?.must_equal false
+        end
+      end
+    end
+
+    it 'is false if thrift is down' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+
+      Mixlib::ShellOut.stub :new, nodetool_info_mock(thrift: false) do
+        registry.stub :state, :normal do
+          registry.can_seed?.must_equal false
+        end
+      end
+    end
+
+    it 'is false if native transport is down' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+
+      Mixlib::ShellOut.stub :new, nodetool_info_mock(native: false) do
+        registry.stub :state, :normal do
+          registry.can_seed?.must_equal false
+        end
+      end
+    end
+
+    it 'is true if gossip, thirft, and native transport are up and node state is NORMAL' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+
+      Mixlib::ShellOut.stub :new, nodetool_info_mock do
+        registry.stub :state, :normal do
+          registry.can_seed?.must_equal true
         end
       end
     end
