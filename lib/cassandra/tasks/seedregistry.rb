@@ -14,6 +14,15 @@ module Cassandra
        raise ArgumentError.new('cluster_name must not be empty') if @cluster_name.empty?
      end
 
+     # Return true if the Cassandra node is a valid seed, false otherwise
+     #
+     # @return [Boolean]
+     #
+     def can_seed?
+       return false unless state == :normal
+       true
+     end
+
      # Return the state of the Cassandra node
      #
      # The returned state is reported by "nodetool netstats".

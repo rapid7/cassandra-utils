@@ -139,4 +139,16 @@ describe Cassandra::Tasks::SeedRegistry do
       end
     end
   end
+
+  describe :can_seed? do
+    it 'is false unless the node state is NORMAL' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+
+      [:moving, :joining, :leaving].each do |state|
+        registry.stub :state, state do
+          registry.can_seed?.must_equal false
+        end
+      end
+    end
+  end
 end
