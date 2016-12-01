@@ -14,7 +14,13 @@ describe Cassandra::Tasks::SeedRegistry do
   end
 
   def nodetool_info_mock(options = {})
-    options = {data_center: 'us-east', rack: '1d'}.merge(options)
+    options = {
+      gossip: true,
+      thrift: true,
+      native: true,
+      data_center: 'us-east',
+      rack: '1d'
+    }.merge(options)
     if options[:data_center]
       options[:data_center] = "Data Center : #{options[:data_center]}"
     end
@@ -28,9 +34,9 @@ describe Cassandra::Tasks::SeedRegistry do
       results = <<-END
       Token                  : (invoke with -T/--tokens to see all 256 tokens)
       ID                     : uuid
-      Gossip active          : true
-      Thrift active          : true
-      Native Transport active: true
+      Gossip active          : #{options[:gossip]}
+      Thrift active          : #{options[:thrift]}
+      Native Transport active: #{options[:native]}
       Load                   : 0.0 GB
       Generation No          : 0
       Uptime (seconds)       : 0
