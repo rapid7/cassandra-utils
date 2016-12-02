@@ -269,5 +269,73 @@ describe Cassandra::Tasks::SeedRegistry do
         end
       end
     end
+
+    it 'unhealthy => healthy node gets a semaphore lock' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+      semaphore = MockSemaphore.new
+
+      DaemonRunner::Semaphore.stub :new, semaphore do
+        registry.stub :data_center, 'data-center' do
+          registry.stub :rack, 'rack' do
+
+            # Node is unhealthy so we should not get a lock or spawn a renew thread.
+            registry.stub :can_seed?, false do
+              registry.run!
+            end
+
+            semaphore.lock_call_count.must_equal 0, "Unhealthy run will not lock"
+            semaphore.renew_call_count.must_equal 0, "Unhealthy run will not rerenew"
+            semaphore.kill_call_count.must_equal 0, "Unhealthy run will not kill renew"
+            semaphore.locked_call_count.must_equal 0, "Unhealthy run will not check locked"
+            semaphore.try_release_count.must_equal 0, "Unhealthy run will not release lock"
+
+            # Node is healthy so we should get a lock and spawn a renew thread.
+            registry.stub :can_seed?, true do
+              registry.run!
+            end
+
+            semaphore.lock_call_count.must_equal 1, "Healthy run will lock"
+            semaphore.renew_call_count.must_equal 1, "Healthy run will spawn renew"
+            semaphore.kill_call_count.must_equal 0, "Healthy run won't kill renew"
+            semaphore.locked_call_count.must_equal 0, "Healthy run won't check locked"
+            semaphore.try_release_count.must_equal 0, "Healthy run won't release lock"
+          end
+        end
+      end
+    end
+
+    it 'unhealthy => unhealthy node will not get a semaphore lock' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+      semaphore = MockSemaphore.new
+
+      DaemonRunner::Semaphore.stub :new, semaphore do
+        registry.stub :data_center, 'data-center' do
+          registry.stub :rack, 'rack' do
+
+            # Node is unhealthy so we should not get a lock or spawn a renew thread.
+            registry.stub :can_seed?, false do
+              registry.run!
+            end
+
+            semaphore.lock_call_count.must_equal 0, "First uhealthy run will not lock"
+            semaphore.renew_call_count.must_equal 0, "First unhealthy run will not rerenew"
+            semaphore.kill_call_count.must_equal 0, "First unhealthy run will not kill renew"
+            semaphore.locked_call_count.must_equal 0, "First unhealthy run will not check locked"
+            semaphore.try_release_count.must_equal 0, "First unhealthy run will not release lock"
+
+            # Node is still unhealthy so we should not get a lock or spawn a renew thread.
+            registry.stub :can_seed?, false do
+              registry.run!
+            end
+
+            semaphore.lock_call_count.must_equal 0, "Next unhealthy run will not lock"
+            semaphore.renew_call_count.must_equal 0, "Next unhealthy run will not rerenew"
+            semaphore.kill_call_count.must_equal 0, "Next unhealthy run will not kill renew"
+            semaphore.locked_call_count.must_equal 0, "Next unhealthy run will not check locked"
+            semaphore.try_release_count.must_equal 0, "Next unhealthy run will not release lock"
+          end
+        end
+      end
+    end
   end
 end
