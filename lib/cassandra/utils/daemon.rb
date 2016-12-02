@@ -6,6 +6,7 @@ module Cassandra
 
       def tasks
         [
+          [seed_registry_task, 'run!'],
           [auto_clean_task, 'run!'],
           [health_stat, 'run!'],
           [compaction_stat, 'run!'],
@@ -14,6 +15,11 @@ module Cassandra
       end
 
       private
+
+      def seed_registry_task
+        name = options[:seed_service_name]
+        @seed_registry_task ||= ::Cassandra::Tasks::SeedRegistry.new(name)
+      end
 
       def auto_clean_task
         @auto_clean_task ||= ::Cassandra::Tasks::Autoclean.new(options)
