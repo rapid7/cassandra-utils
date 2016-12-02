@@ -1,6 +1,7 @@
 require 'test_helper'
 require 'securerandom'
 require 'mock_shell_out'
+require 'mock_semaphore'
 
 describe Cassandra::Tasks::SeedRegistry do
   describe :new do
@@ -195,6 +196,77 @@ describe Cassandra::Tasks::SeedRegistry do
       Mixlib::ShellOut.stub :new, nodetool_info_mock do
         registry.stub :state, :normal do
           registry.can_seed?.must_equal true
+        end
+      end
+    end
+  end
+
+  describe :run! do
+    it 'healthy node gets a semaphore lock' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+      semaphore = MockSemaphore.new
+
+      DaemonRunner::Semaphore.stub :new, semaphore do
+        registry.stub :data_center, 'data-center' do
+          registry.stub :rack, 'rack' do
+
+            # Run once. We should get a lock and spawn a renew thread.
+            registry.stub :can_seed?, true do
+              registry.run!
+            end
+
+            semaphore.lock_call_count.must_equal 1, "First run will lock"
+            semaphore.renew_call_count.must_equal 1, "First run will spawn renew"
+            semaphore.kill_call_count.must_equal 0, "First run won't kill renew"
+            semaphore.locked_call_count.must_equal 0, "First run won't check locked"
+            semaphore.try_release_count.must_equal 0, "First run won't release lock"
+
+            # Run twice more. The lock should be held and no new renew thread spawned.
+            registry.stub :can_seed?, true do
+              registry.run!
+              registry.run!
+            end
+
+            semaphore.lock_call_count.must_equal 1, "Next run won't relock"
+            semaphore.renew_call_count.must_equal 1, "Next run won't rerenew"
+            semaphore.kill_call_count.must_equal 0, "Next run won't kill renew"
+            semaphore.locked_call_count.must_equal 0, "Next run won't check locked"
+            semaphore.try_release_count.must_equal 0, "Next run won't release lock"
+          end
+        end
+      end
+    end
+
+    it 'unhealthy node releases a semaphore lock' do
+      registry = Cassandra::Tasks::SeedRegistry.new('test')
+      semaphore = MockSemaphore.new
+
+      DaemonRunner::Semaphore.stub :new, semaphore do
+        registry.stub :data_center, 'data-center' do
+          registry.stub :rack, 'rack' do
+
+            # Run once. We should get a lock and spawn a renew thread.
+            registry.stub :can_seed?, true do
+              registry.run!
+            end
+
+            semaphore.lock_call_count.must_equal 1, "Healthy run will lock"
+            semaphore.renew_call_count.must_equal 1, "Healthy run will spawn renew"
+            semaphore.kill_call_count.must_equal 0, "Healthy run won't kill renew"
+            semaphore.locked_call_count.must_equal 0, "Healthy run won't check locked"
+            semaphore.try_release_count.must_equal 0, "Healthy run won't release lock"
+
+            # If the node fails, we should release the lock and kill the renew thread.
+            registry.stub :can_seed?, false do
+              registry.run!
+            end
+
+            semaphore.lock_call_count.must_equal 1, "Unhealthy run will not relock"
+            semaphore.renew_call_count.must_equal 1, "Unhealthy run will not rerenew"
+            semaphore.kill_call_count.must_equal 1, "Unhealthy run will kill renew"
+            semaphore.locked_call_count.must_equal 2, "Unhealthy run will check locked"
+            semaphore.try_release_count.must_equal 1, "Unhealthy run will release lock"
+          end
         end
       end
     end

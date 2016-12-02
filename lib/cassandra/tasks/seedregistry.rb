@@ -1,4 +1,5 @@
 require 'daemon_runner/shell_out'
+require 'daemon_runner/semaphore'
 
 module Cassandra
   module Tasks
@@ -12,6 +13,18 @@ module Cassandra
      def initialize cluster_name
        @cluster_name = cluster_name.to_s
        raise ArgumentError.new('cluster_name must not be empty') if @cluster_name.empty?
+       @semaphore = nil
+       @renew_thread = nil
+     end
+
+     # Get a lock in Consul registering the Cassandra node as a seed
+     #
+     def run!
+       if can_seed?
+         try_get_seed_lock
+       else
+         release_seed_lock
+       end
      end
 
      # Return true if the Cassandra node is a valid seed, false otherwise
@@ -106,6 +119,36 @@ module Cassandra
        @nodetool_netstats ||= DaemonRunner::ShellOut.new(command: 'nodetool netstats', timeout: 300)
        @nodetool_netstats.run!
        @nodetool_netstats.stdout
+     end
+
+     # Try to get the lock in Consul for this node as a seed
+     #
+     def try_get_seed_lock
+       if @semaphore.nil?
+         name = "#{@cluster_name}/#{data_center}-#{rack}"
+         @semaphore = DaemonRunner::Semaphore.lock(name, 1)
+       end
+
+       if @renew_thread.nil?
+         @renew_thread = @semaphore.renew
+       end
+     end
+
+     # Release the lock in Consul for this node as a seed
+     #
+     def release_seed_lock
+       unless @renew_thread.nil?
+         @renew_thread.kill
+         @renew_thread = nil
+       end
+
+       unless @semaphore.nil?
+         while @semaphore.locked?
+           @semaphore.try_release
+           sleep 0.1
+         end
+         @semaphore = nil
+       end
      end
    end
   end
