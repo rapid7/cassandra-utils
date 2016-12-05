@@ -15,6 +15,7 @@ module Cassandra
        raise ArgumentError.new('cluster_name must not be empty') if @cluster_name.empty?
        @semaphore = nil
        @renew_thread = nil
+       @nodetool_info_cache = nil
      end
 
      # Schedule the seed registration process to run periodically
@@ -26,6 +27,7 @@ module Cassandra
      # Get a lock in Consul registering the Cassandra node as a seed
      #
      def run!
+       @nodetool_info_cache = nil
        if can_seed?
          try_get_seed_lock
        else
@@ -40,7 +42,7 @@ module Cassandra
      def can_seed?
        return false unless state == :normal
 
-       results = (nodetool_info || '').split("\n")
+       results = (nodetool_info_cached || '').split("\n")
        results.map! { |line| line.strip }
 
        filter_results = lambda do |key|
@@ -80,7 +82,7 @@ module Cassandra
      # @return [String, nil]
      #
      def data_center
-       results = (nodetool_info || '').split("\n")
+       results = (nodetool_info_cached || '').split("\n")
        results.map! { |line| line.strip }
        results.select! { |line| line.include?('Data Center') }
        results.map! { |line| line.split(':')[1] }
@@ -96,7 +98,7 @@ module Cassandra
      # @return [String, nil]
      #
      def rack
-       results = (nodetool_info || '').split("\n")
+       results = (nodetool_info_cached || '').split("\n")
        results.map! { |line| line.strip }
        results.select! { |line| line.include?('Rack') }
        results.map! { |line| line.split(':')[1] }
@@ -115,6 +117,17 @@ module Cassandra
        @nodetool_info ||= DaemonRunner::ShellOut.new(command: 'nodetool info', timeout: 300)
        @nodetool_info.run!
        @nodetool_info.stdout
+     end
+
+     # Return cached output from "nodetool info" command
+     #
+     # @return [String, nil] Cached output from the "nodetool info" command
+     #
+     def nodetool_info_cached
+       if @nodetool_info_cache.nil?
+         @nodetool_info_cache = nodetool_info
+       end
+       @nodetool_info_cache
      end
 
      # Run the "nodetool netstats" command and return the output
