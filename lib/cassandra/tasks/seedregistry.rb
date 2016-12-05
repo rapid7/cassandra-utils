@@ -17,7 +17,7 @@ module Cassandra
        @renew_thread = nil
      end
 
-     # Schedule the sedd registration process to run periodically
+     # Schedule the seed registration process to run periodically
      #
      def schedule
        [:interval, '10m']
