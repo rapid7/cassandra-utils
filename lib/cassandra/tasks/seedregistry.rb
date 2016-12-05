@@ -21,7 +21,7 @@ module Cassandra
      # Schedule the seed registration process to run periodically
      #
      def schedule
-       [:interval, '10m']
+       [:interval, '10s']
      end
 
      # Get a lock in Consul registering the Cassandra node as a seed
