@@ -121,13 +121,12 @@ module Cassandra
 
      # Return cached output from "nodetool info" command
      #
+     # This will attempt to populate an empty cache by calling "nodetool info".
+     #
      # @return [String, nil] Cached output from the "nodetool info" command
      #
      def nodetool_info_cached
-       if @nodetool_info_cache.nil?
-         @nodetool_info_cache = nodetool_info
-       end
-       @nodetool_info_cache
+       @nodetool_info_cache ||= nodetool_info
      end
 
      # Run the "nodetool netstats" command and return the output
