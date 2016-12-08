@@ -14,6 +14,9 @@ class CassandraUtils < Thor
   class_option :cleanup_lock_count, type: :numeric,
     required: true, default: 1,
     desc: 'Number of nodes that can obtain a Semaphore lock'
+  class_option :seed_service_name, type: :string,
+    required: true, default: 'cassandra',
+    desc: 'Unique string to be used in obtaining a Consul seed lock. Example: cassandra-seed-#{cluster_name}'
   desc 'util', 'Perform various utilities'
   def util
     s = ::Cassandra::Utils::Daemon.new(options)
