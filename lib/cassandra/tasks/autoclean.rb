@@ -112,7 +112,11 @@ module Cassandra
        end
 
        tokens = data['tokens']
-       return [] if tokens.nil?
+       if tokens.nil?
+         logger.debug "Failed to read cached tokens because they're nil"
+         return []
+       end
+
        return [] unless tokens.respond_to? :each
 
        tokens.sort!
