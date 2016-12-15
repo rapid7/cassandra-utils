@@ -155,7 +155,11 @@ module Cassandra
      # @return [Array<String>] Tokens owned by this node
      #
      def tokens
-       return [] if address.nil?
+       if address.nil?
+         logger.debug "Failed to read live tokens because address is nil"
+         return []
+       end
+
        results = (nodetool_ring || '').split("\n")
        results.map! { |line| line.strip }
        results.select! { |line| line.start_with? address }
