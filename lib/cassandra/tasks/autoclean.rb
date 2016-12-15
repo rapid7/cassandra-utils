@@ -117,7 +117,10 @@ module Cassandra
          return []
        end
 
-       return [] unless tokens.respond_to? :each
+       unless tokens.respond_to? :each
+         logger.debug "Failed to read cached tokens because they're invalid"
+         return []
+       end
 
        tokens.sort!
        tokens
