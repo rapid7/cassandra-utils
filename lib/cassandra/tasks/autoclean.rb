@@ -74,8 +74,17 @@ module Cassandra
      # Run the Cassandra cleanup process if necessary
      #
      def run!
-       return unless status == :up
-       return unless state == :normal
+       node_status = status
+       if node_status != :up
+         logger.debug "Cleanup skipped because node status is not up: #{node_status}"
+         return
+       end
+
+       node_state = state
+       if node_state != :normal
+         logger.debug "Cleanup skipped because node state is not normal: #{node_state}"
+         return
+       end
 
        new_tokens = Set.new tokens
        old_tokens = Set.new cached_tokens
