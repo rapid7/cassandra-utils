@@ -125,7 +125,9 @@ module Cassandra
        tokens.sort!
        tokens
      # Token file could not be opend or parsed
-     rescue Errno::ENOENT, JSON::ParserError
+     rescue Errno::ENOENT, JSON::ParserError => e
+       logger.debug "Caught exception while reading cached tokens"
+       logger.debug e
        []
      end
 
