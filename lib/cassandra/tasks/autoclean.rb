@@ -88,7 +88,10 @@ module Cassandra
 
        new_tokens = Set.new tokens
        old_tokens = Set.new cached_tokens
-       return if new_tokens == old_tokens
+       if new_tokens == old_tokens
+         logger.debug "Cleanup skipped because tokens haven't changed"
+         return
+       end
 
        ::DaemonRunner::Semaphore.lock(@service_name, @lock_count) do
          result = nodetool_cleanup
