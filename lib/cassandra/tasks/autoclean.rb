@@ -106,8 +106,8 @@ module Cassandra
      def cached_tokens
        data = token_cache.read
        data = JSON.parse data
-       if data['version'] != ::Cassandra::Utils::VERSION
-         logger.debug "Failed to read cached tokens. Expected version #{::Cassandra::Utils::VERSION} got #{data['version']}"
+       unless data['version'] == ::Cassandra::Utils::VERSION
+         logger.debug "Failed to read cached tokens because version didn't match. Expected #{::Cassandra::Utils::VERSION} got #{data['version']}"
          return []
        end
 
