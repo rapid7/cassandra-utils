@@ -75,13 +75,13 @@ module Cassandra
      #
      def run!
        node_status = status
-       if node_status != :up
+       unless node_status == :up
          logger.debug "Cleanup skipped because node status is not up: #{node_status}"
          return
        end
 
        node_state = state
-       if node_state != :normal
+       unless node_state == :normal
          logger.debug "Cleanup skipped because node state is not normal: #{node_state}"
          return
        end
