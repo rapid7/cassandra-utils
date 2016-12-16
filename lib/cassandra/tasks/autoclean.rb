@@ -74,12 +74,24 @@ module Cassandra
      # Run the Cassandra cleanup process if necessary
      #
      def run!
-       return unless status == :up
-       return unless state == :normal
+       node_status = status
+       unless node_status == :up
+         logger.debug "Cleanup skipped because of node status. Expected up got #{node_status}"
+         return
+       end
+
+       node_state = state
+       unless node_state == :normal
+         logger.debug "Cleanup skipped because of node state. Expected normal got #{node_state}"
+         return
+       end
 
        new_tokens = Set.new tokens
        old_tokens = Set.new cached_tokens
-       return if new_tokens == old_tokens
+       if new_tokens == old_tokens
+         logger.debug "Cleanup skipped because tokens haven't changed"
+         return
+       end
 
        ::DaemonRunner::Semaphore.lock(@service_name, @lock_count) do
          result = nodetool_cleanup
@@ -94,16 +106,28 @@ module Cassandra
      def cached_tokens
        data = token_cache.read
        data = JSON.parse data
-       return [] unless data['version'] == ::Cassandra::Utils::VERSION
+       unless data['version'] == ::Cassandra::Utils::VERSION
+         logger.debug "Failed to read cached tokens because version didn't match. Expected #{::Cassandra::Utils::VERSION} got #{data['version']}"
+         return []
+       end
 
        tokens = data['tokens']
-       return [] if tokens.nil?
-       return [] unless tokens.respond_to? :each
+       if tokens.nil?
+         logger.debug "Failed to read cached tokens because they're nil"
+         return []
+       end
+
+       unless tokens.respond_to? :each
+         logger.debug "Failed to read cached tokens because they're invalid"
+         return []
+       end
 
        tokens.sort!
        tokens
      # Token file could not be opend or parsed
-     rescue Errno::ENOENT, JSON::ParserError
+     rescue Errno::ENOENT, JSON::ParserError => e
+       logger.debug "Caught exception while reading cached tokens"
+       logger.debug e
        []
      end
 
@@ -131,7 +155,11 @@ module Cassandra
      # @return [Array<String>] Tokens owned by this node
      #
      def tokens
-       return [] if address.nil?
+       if address.nil?
+         logger.debug "Failed to read live tokens because address is nil"
+         return []
+       end
+
        results = (nodetool_ring || '').split("\n")
        results.map! { |line| line.strip }
        results.select! { |line| line.start_with? address }
