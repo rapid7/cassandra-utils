@@ -104,8 +104,15 @@ module Cassandra
      # @return [Array<String>] Cached tokens
      #
      def cached_tokens
+       if token_cache.closed?
+         logger.debug "Failed to read cached tokens because file is closed."
+         return []
+       end
+
+       token_cache.seek 0
        data = token_cache.read
        data = JSON.parse data
+
        unless data['version'] == ::Cassandra::Utils::VERSION
          logger.debug "Failed to read cached tokens because version didn't match. Expected #{::Cassandra::Utils::VERSION} got #{data['version']}"
          return []
