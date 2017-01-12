@@ -279,7 +279,8 @@ module Cassandra
      # @return [File] File where tokens wil be saved
      #
      def token_cache
-       File.new(token_cache_path, 'w+')
+       mode = File::CREAT | File::RDWR | File::SYNC
+       @token_cache ||= File.new(token_cache_path, mode)
      end
    end
   end
