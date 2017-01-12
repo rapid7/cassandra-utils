@@ -142,7 +142,6 @@ module Cassandra
        }
 
        token_cache.write data.to_json
-       token_cache.flush
      end
 
      # Get the tokens this node owns
