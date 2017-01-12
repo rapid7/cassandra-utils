@@ -148,6 +148,13 @@ module Cassandra
          :version => ::Cassandra::Utils::VERSION
        }
 
+       if token_cache.closed?
+         logger.debug "Failed to save cached tokens because file is closed."
+         return []
+       end
+
+       token_cache.seek 0
+       token_cache.truncate 0
        token_cache.write data.to_json
      end
 
