@@ -22,6 +22,38 @@ module Cassandra
         #
         # @return [state, nil]
         #
+        def nodetool_info
+          `ccm node1 nodetool info`
+        end
+
+        def gossipstate
+                  results = (nodetool_info || '').split("\n")
+                  results.map! { |line| line.strip }
+                  results.select! { |line| line.include? 'Gossip active    :' }
+                  results.map! { |line| line.split(':')[1] }
+                  results.compact!
+                  return nil if results.size != 1
+                  results.first.strip.downcase.to_sym
+                end
+
+        def thriftstate
+                  results = (nodetool_info || '').split("\n")
+                  results.map! { |line| line.strip }
+                  results.select! { |line| line.include? 'Thrift active    :' }
+                  results.map! { |line| line.split(':')[1] }
+                  results.compact!
+                  return nil if results.size != 1
+                  results.first.strip.downcase.to_sym
+                end
+
+
+
+        results = nodetool_info
+        puts results
+        puts state
+
+
+
         def state
           results = (nodetool_netstats || '').split("\n")
           results.map! { |line| line.strip }
