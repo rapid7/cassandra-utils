@@ -5,8 +5,8 @@ module Cassandra
         def run!
           running = true
           if state == :normal
-            running &&= nodetool_statusgossip.strip == 'running'
-            running &&= nodetool_statusthrift.strip == 'running'
+            running &&= gossipstate.strip == 'true'
+            running &&= thriftstate.strip == 'true'
           end
           Utils::Statsd.new(metric_name).to_dd(running).push!
           running
@@ -23,7 +23,7 @@ module Cassandra
         # @return [state, nil]
         #
         def nodetool_info
-          `ccm node1 nodetool info`
+          `nodetool info`
         end
 
         def gossipstate
