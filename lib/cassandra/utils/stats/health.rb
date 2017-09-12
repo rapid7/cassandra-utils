@@ -23,37 +23,31 @@ module Cassandra
         # @return [state, nil]
         #
         def nodetool_info
-            @nodetool_info ||= DaemonRunner::ShellOut.new(command: 'nodetool info')
+            @nodetool_info ||= DaemonRunner::ShellOut.new(command: 'ccm node1 nodetool info')
             @nodetool_info.run!
             @nodetool_info.stdout
           end
 
 
         def gossipstate
-                  results = (nodetool_info || '').split("\n")
-                  results.map! { |line| line.strip }
-                  results.select! { |line| line.include? 'Gossip active    :' }
-                  results.map! { |line| line.split(':')[1] }
-                  results.compact!
-                  return nil if results.size != 1
-                  results.first.strip.downcase.to_sym
-                end
+          results = (nodetool_info || '').split("\n")
+          results.map! { |line| line.strip }
+          results.select! { |line| line.include? 'Gossip active    :' }
+          results.map! { |line| line.split(':')[1] }
+          results.compact!
+          return nil if results.size != 1
+          results.first.strip.downcase.to_sym
+        end
 
         def thriftstate
-                  results = (nodetool_info || '').split("\n")
-                  results.map! { |line| line.strip }
-                  results.select! { |line| line.include? 'Thrift active    :' }
-                  results.map! { |line| line.split(':')[1] }
-                  results.compact!
-                  return nil if results.size != 1
-                  results.first.strip.downcase.to_sym
-                end
-
-
-
-        puts results
-        puts state
-
+          results = (nodetool_info || '').split("\n")
+          results.map! { |line| line.strip }
+          results.select! { |line| line.include? 'Thrift active    :' }
+          results.map! { |line| line.split(':')[1] }
+          results.compact!
+          return nil if results.size != 1
+          results.first.strip.downcase.to_sym
+        end
 
 
         def state
@@ -77,7 +71,7 @@ module Cassandra
         # @return [String, nil] Output from the "nodetool statusgossip" command
         #
         def nodetool_statusgossip
-          @nodetool_statusgossip ||= DaemonRunner::ShellOut.new(command: 'nodetool statusgossip')
+          @nodetool_statusgossip ||= DaemonRunner::ShellOut.new(command: 'ccm node1 nodetool statusgossip')
           @nodetool_statusgossip.run!
           @nodetool_statusgossip.stdout
         end
@@ -87,7 +81,7 @@ module Cassandra
         # @return [String, nil] Output from the "nodetool statusthrift" command
         #
         def nodetool_statusthrift
-          @nodetool_statusthrift||= DaemonRunner::ShellOut.new(command: 'nodetool statusthrift')
+          @nodetool_statusthrift||= DaemonRunner::ShellOut.new(command: 'ccm node1 nodetool statusthrift')
           @nodetool_statusthrift.run!
           @nodetool_statusthrift.stdout
         end
@@ -97,7 +91,7 @@ module Cassandra
         # @return [String, nil] Output from the "nodetool netstats" command
         #
         def nodetool_netstats
-          @nodetool_netstats ||= DaemonRunner::ShellOut.new(command: 'nodetool netstats', timeout: 300)
+          @nodetool_netstats ||= DaemonRunner::ShellOut.new(command: 'ccm node1 nodetool netstats', timeout: 300)
           @nodetool_netstats.run!
           @nodetool_netstats.stdout
         end
