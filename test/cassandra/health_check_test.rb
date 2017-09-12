@@ -8,8 +8,8 @@ describe Cassandra::Utils::Stats::Health do
   describe :run! do
     it 'succeeds if node is NORMAL and thrift and gossip are running' do
       @checker.stub :nodetool_netstats, 'Mode: NORMAL' do
-        @checker.stub :nodetool_statusthrift, 'running' do
-          @checker.stub :nodetool_statusgossip, 'running' do
+        @checker.stub :thriftstate, 'true' do
+          @checker.stub :gossipstate, 'true' do
             @checker.run!.must_equal true
           end
         end
@@ -18,8 +18,8 @@ describe Cassandra::Utils::Stats::Health do
 
     it 'fails if gossip is down' do
       @checker.stub :nodetool_netstats, 'Mode: NORMAL' do
-        @checker.stub :nodetool_statusgossip, 'down' do
-          @checker.stub :nodetool_statusthrift, 'running' do
+        @checker.stub :gossipstate, 'false' do
+          @checker.stub :thriftstate, 'true' do
             @checker.run!.must_equal false
           end
         end
@@ -28,8 +28,8 @@ describe Cassandra::Utils::Stats::Health do
 
     it 'fails if thrift is down' do
       @checker.stub :nodetool_netstats, 'Mode: NORMAL' do
-        @checker.stub :nodetool_statusthrift, 'down' do
-          @checker.stub :nodetool_statusgossip, 'running' do
+        @checker.stub :thriftstate, 'false' do
+          @checker.stub :gossipstate, 'true' do
             @checker.run!.must_equal false
           end
         end
