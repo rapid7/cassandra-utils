@@ -23,8 +23,11 @@ module Cassandra
         # @return [state, nil]
         #
         def nodetool_info
-          `nodetool info`
-        end
+            @nodetool_info ||= DaemonRunner::ShellOut.new(command: 'nodetool info')
+            @nodetool_info.run!
+            @nodetool_info.stdout
+          end
+
 
         def gossipstate
                   results = (nodetool_info || '').split("\n")
@@ -48,7 +51,6 @@ module Cassandra
 
 
 
-        results = nodetool_info
         puts results
         puts state
 
