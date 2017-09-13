@@ -16,8 +16,12 @@ module Cassandra
           'cassandra.service.running'
         end
 
-
-        def gossipstate
+        # Return the state of nodetool info gossip
+        #
+        # The returned state is reported by "nodetool info".
+        #
+        # @return nil if results.size != 1
+       def gossipstate
           results = (nodetool_info || '').split("\n")
           results.map! { |line| line.strip }
           results.select! { |line| line.include? 'Gossip active' }
@@ -27,6 +31,12 @@ module Cassandra
           results.first.strip.downcase
         end
 
+
+        # Return the state of nodetool info thrift
+        #
+        # The returned state is reported by "nodetool info".
+        #
+        # @return nil if results.size != 1
         def thriftstate
           results = (nodetool_info || '').split("\n")
           results.map! { |line| line.strip }
@@ -58,6 +68,12 @@ module Cassandra
         end
 
         private
+
+        # Shell out via DaemonRunner to run 'nodetool info'
+        #
+        # The returned state is either true or false
+        #
+
 
         def nodetool_info
             @nodetool_info ||= DaemonRunner::ShellOut.new(command: 'nodetool info')
