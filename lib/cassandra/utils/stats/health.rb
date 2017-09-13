@@ -20,7 +20,7 @@ module Cassandra
         #
         # The returned state is reported by "nodetool info".
         #
-        # @return nil if results.size != 1
+        # @return [String, nil]
        def gossipstate
           results = (nodetool_info || '').split("\n")
           results.map! { |line| line.strip }
@@ -36,7 +36,7 @@ module Cassandra
         #
         # The returned state is reported by "nodetool info".
         #
-        # @return nil if results.size != 1
+        # @return [String, nil]
         def thriftstate
           results = (nodetool_info || '').split("\n")
           results.map! { |line| line.strip }
@@ -51,7 +51,7 @@ module Cassandra
         #
         # The returned state is reported by "nodetool netstats".
         #
-        # @return [state, nil]
+        # @return [Symbol, nil]
         #
         def state
           results = (nodetool_netstats || '').split("\n")
@@ -73,9 +73,8 @@ module Cassandra
         #
         # The returned state is either true or false
         #
-
-
-        def nodetool_info
+        # @return [String, nil] Output from the "nodetool info" command 
+       def nodetool_info
             @nodetool_info ||= DaemonRunner::ShellOut.new(command: 'nodetool info')
             @nodetool_info.run!
             @nodetool_info.stdout
