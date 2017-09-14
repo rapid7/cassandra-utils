@@ -5,8 +5,8 @@ module Cassandra
         def run!
           running = true
           if state == :normal
-            running &&= nodetool_statusgossip.strip == 'running'
-            running &&= nodetool_statusthrift.strip == 'running'
+            running &&= gossipstate == 'true'
+            running &&= thriftstate == 'true'
           end
           Utils::Statsd.new(metric_name).to_dd(running).push!
           running
@@ -16,11 +16,42 @@ module Cassandra
           'cassandra.service.running'
         end
 
+        # Return the state of nodetool info gossip
+        #
+        # The returned state is reported by "nodetool info".
+        #
+        # @return [String, nil]
+       def gossipstate
+          results = (nodetool_info || '').split("\n")
+          results.map! { |line| line.strip }
+          results.select! { |line| line.include? 'Gossip active' }
+          results.map! { |line| line.split(':')[1] }
+          results.compact!
+          return nil if results.size != 1
+          results.first.strip.downcase
+        end
+
+
+        # Return the state of nodetool info thrift
+        #
+        # The returned state is reported by "nodetool info".
+        #
+        # @return [String, nil]
+        def thriftstate
+          results = (nodetool_info || '').split("\n")
+          results.map! { |line| line.strip }
+          results.select! { |line| line.include? 'Thrift active' }
+          results.map! { |line| line.split(':')[1] }
+          results.compact!
+          return nil if results.size != 1
+          results.first.strip.downcase
+        end
+
         # Return the state of the Cassandra node
         #
         # The returned state is reported by "nodetool netstats".
         #
-        # @return [state, nil]
+        # @return [Symbol, nil]
         #
         def state
           results = (nodetool_netstats || '').split("\n")
@@ -38,25 +69,16 @@ module Cassandra
 
         private
 
-        # Run the "nodetool statusgossip' command and return the output
+        # Shell out via DaemonRunner to run 'nodetool info'
         #
-        # @return [String, nil] Output from the "nodetool statusgossip" command
+        # The returned state is either true or false
         #
-        def nodetool_statusgossip
-          @nodetool_statusgossip ||= DaemonRunner::ShellOut.new(command: 'nodetool statusgossip')
-          @nodetool_statusgossip.run!
-          @nodetool_statusgossip.stdout
-        end
-
-        # Run the "nodetool statusthrift' command and return the output
-        #
-        # @return [String, nil] Output from the "nodetool statusthrift" command
-        #
-        def nodetool_statusthrift
-          @nodetool_statusthrift||= DaemonRunner::ShellOut.new(command: 'nodetool statusthrift')
-          @nodetool_statusthrift.run!
-          @nodetool_statusthrift.stdout
-        end
+        # @return [String, nil] Output from the "nodetool info" command 
+       def nodetool_info
+            @nodetool_info ||= DaemonRunner::ShellOut.new(command: 'nodetool info')
+            @nodetool_info.run!
+            @nodetool_info.stdout
+          end
 
         # Run the "nodetool netstats' command and return the output
         #
