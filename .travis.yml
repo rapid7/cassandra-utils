@@ -2,4 +2,9 @@ sudo: false
 language: ruby
 rvm:
   - 2.2.4
+sudo: false
 before_install: gem install bundler -v 1.12.5
+install: bundle install
+script:
+  - bundle exec rake test
+
