@@ -11,7 +11,6 @@ PATH
   remote: .
   specs:
     cassandra-utils (0.0.1)
-      OptionParser (~> 0.5.1)
       daemon_runner (~> 0.4)
       dogstatsd-ruby (~> 1.6)
       mixlib-shellout (~> 2.2)
@@ -20,7 +19,6 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    OptionParser (0.5.1)
     daemon_runner (0.4.2)
       diplomat (~> 1.0)
       logging (~> 2.1)

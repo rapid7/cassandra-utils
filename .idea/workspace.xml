@@ -2,10 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="86a15e7b-a654-468a-94b3-6005a9787119" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/cassandra-utils.iml" afterPath="$PROJECT_DIR$/.idea/cassandra-utils.iml" />
       <change beforePath="$PROJECT_DIR$/Gemfile.lock" afterPath="$PROJECT_DIR$/Gemfile.lock" />
-      <change beforePath="$PROJECT_DIR$/bin/cass-util" afterPath="$PROJECT_DIR$/bin/cass-util" />
       <change beforePath="$PROJECT_DIR$/cassandra-utils.gemspec" afterPath="$PROJECT_DIR$/cassandra-utils.gemspec" />
-      <change beforePath="$PROJECT_DIR$/lib/cassandra/utils/stats/health.rb" afterPath="$PROJECT_DIR$/lib/cassandra/utils/stats/health.rb" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -26,7 +25,7 @@
         <entry file="file://$PROJECT_DIR$/lib/cassandra/utils/stats/health.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="580">
-              <caret line="29" column="22" lean-forward="true" selection-start-line="29" selection-start-column="22" selection-end-line="29" selection-end-column="22" />
+              <caret line="29" column="22" lean-forward="false" selection-start-line="29" selection-start-column="22" selection-end-line="29" selection-end-column="22" />
               <folding />
             </state>
           </provider>
@@ -37,16 +36,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="302">
               <caret line="31" column="66" lean-forward="false" selection-start-line="31" selection-start-column="66" selection-end-line="31" selection-end-column="66" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="statsd.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/cassandra/utils/statsd.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="80">
-              <caret line="4" column="10" lean-forward="false" selection-start-line="4" selection-start-column="10" selection-end-line="4" selection-end-column="10" />
               <folding />
             </state>
           </provider>
@@ -72,11 +61,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="status.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="status.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/cassandra/utils/status.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="340">
-              <caret line="17" column="19" lean-forward="true" selection-start-line="17" selection-start-column="19" selection-end-line="17" selection-end-column="19" />
+              <caret line="17" column="19" lean-forward="false" selection-start-line="17" selection-start-column="19" selection-end-line="17" selection-end-column="19" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="cassandra-utils.gemspec" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/cassandra-utils.gemspec">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="347">
+              <caret line="24" column="0" lean-forward="false" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -130,11 +129,11 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/cassandra-utils.gemspec" />
         <option value="$PROJECT_DIR$/lib/status.rb" />
         <option value="$PROJECT_DIR$/lib/cassandra/utils/stats/health.rb" />
         <option value="$PROJECT_DIR$/bin/cass-util" />
         <option value="$PROJECT_DIR$/lib/cassandra/utils/status.rb" />
+        <option value="$PROJECT_DIR$/cassandra-utils.gemspec" />
       </list>
     </option>
   </component>
@@ -389,12 +388,12 @@
       <workItem from="1515019714482" duration="137000" />
       <workItem from="1515019863327" duration="1316000" />
       <workItem from="1515075353440" duration="287000" />
-      <workItem from="1515075662837" duration="9126000" />
+      <workItem from="1515075662837" duration="9367000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="14909000" />
+    <option name="totallyTimeSpent" value="15150000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="963" extended-state="0" />
@@ -852,14 +851,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/cassandra-utils.gemspec">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="367">
-          <caret line="25" column="0" lean-forward="false" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Gemfile">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -911,7 +902,7 @@
     <entry file="file://$PROJECT_DIR$/lib/cassandra/utils/stats/health.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="580">
-          <caret line="29" column="22" lean-forward="true" selection-start-line="29" selection-start-column="22" selection-end-line="29" selection-end-column="22" />
+          <caret line="29" column="22" lean-forward="false" selection-start-line="29" selection-start-column="22" selection-end-line="29" selection-end-column="22" />
           <folding />
         </state>
       </provider>
@@ -967,7 +958,15 @@
     <entry file="file://$PROJECT_DIR$/lib/cassandra/utils/status.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="340">
-          <caret line="17" column="19" lean-forward="true" selection-start-line="17" selection-start-column="19" selection-end-line="17" selection-end-column="19" />
+          <caret line="17" column="19" lean-forward="false" selection-start-line="17" selection-start-column="19" selection-end-line="17" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cassandra-utils.gemspec">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="347">
+          <caret line="24" column="0" lean-forward="false" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
           <folding />
         </state>
       </provider>
