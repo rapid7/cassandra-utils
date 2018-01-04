@@ -17,6 +17,11 @@ class CassandraUtils < Thor
   class_option :seed_service_name, type: :string,
     required: true, default: 'cassandra',
     desc: 'Unique string to be used in obtaining a Consul seed lock. Example: cassandra-seed-#{cluster_name}'
+  class_option :status, type: :string,
+               required: false, default: 'cassandra',
+               desc: 'THIS IS A TEST'
+
+
   desc 'util', 'Perform various utilities'
   def util
     s = ::Cassandra::Utils::Daemon.new(options)
@@ -24,8 +29,7 @@ class CassandraUtils < Thor
   end
   desc 'status', 'shows what is up'
   def status
-    s = ::Cassandra::Utils::Status.new(options)
-    s.start!
+    s = print "THIS IS UP\n"
   end
 
   # Backwards compatibility
