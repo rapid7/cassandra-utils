@@ -11,6 +11,7 @@ PATH
   remote: .
   specs:
     cassandra-utils (0.0.1)
+      OptionParser (~> 0.5.1)
       daemon_runner (~> 0.4)
       dogstatsd-ruby (~> 1.6)
       mixlib-shellout (~> 2.2)
@@ -19,6 +20,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    OptionParser (0.5.1)
     daemon_runner (0.4.2)
       diplomat (~> 1.0)
       logging (~> 2.1)
@@ -30,12 +32,12 @@ GEM
       multipart-post (>= 1.2, < 3)
     json (2.0.2)
     little-plugger (1.1.4)
-    logging (2.1.0)
+    logging (2.2.2)
       little-plugger (~> 1.1)
       multi_json (~> 1.10)
     minitest (5.9.0)
     mixlib-shellout (2.2.7)
-    multi_json (1.12.1)
+    multi_json (1.12.2)
     multipart-post (2.0.0)
     rake (10.5.0)
     retryable (2.0.4)
@@ -57,4 +59,4 @@ DEPENDENCIES
   thor-scmversion (= 1.7.0)
 
 BUNDLED WITH
-   1.12.5
+   1.16.0

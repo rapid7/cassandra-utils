@@ -16,6 +16,12 @@ module Cassandra
           'cassandra.service.running'
         end
 
+        # Return the state of nodetool status
+        #
+        # The returned state is reported by "nodetool status".
+        #
+
+
         # Return the state of nodetool info gossip
         #
         # The returned state is reported by "nodetool info".
@@ -89,6 +95,13 @@ module Cassandra
           @nodetool_netstats.run!
           @nodetool_netstats.stdout
         end
+
+        # Shell out via DaemonRunner to run 'nodetool status'
+        #
+        # The returned state is a value that NEED DEFINE
+        #
+        # @return [String, nil] Output from the "nodetool status" command
+
       end
     end
   end

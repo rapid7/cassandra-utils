@@ -22,6 +22,12 @@ class CassandraUtils < Thor
     s = ::Cassandra::Utils::Daemon.new(options)
     s.start!
   end
+  desc 'status', 'shows what is up'
+  def status
+    s = ::Cassandra::Utils::Status.new(options)
+    s.start!
+  end
+
   # Backwards compatibility
   desc 'stats', '[DEPRECATED - Use util] Write metrics to Datadog'
   def stats
