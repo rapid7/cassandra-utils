@@ -1,0 +1,15 @@
+---
+info:
+  title: Cassandra Utils
+  description: A utility to reporting metrics on the state of a Cassandra node.
+  x-cortex-git:
+    github:
+      alias: r7org
+      repository: rapid7/cassandra-utils
+  x-cortex-tag: cassandra-utils
+  x-cortex-type: service
+  x-cortex-domain-parents:
+  - tag: platform-delivery
+openapi: 3.0.1
+servers:
+- url: "/"
